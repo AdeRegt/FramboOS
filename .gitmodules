@@ -1,0 +1,3 @@
+[submodule "src/bootloader"]
+	path = src/bootloader
+	url = git@github.com:AdeRegt/EFIBootloader.git
