@@ -1,3 +1,3 @@
 all:
-	$(MAKE) -C bootloader COPYTO=../../../vfsroot/FRAMBOOS/BOOTLDR.EFI LIBREF=../../include
+	$(MAKE) -C bootloader COPYTO=../../../vfsroot/bootldr.efi LIBREF=../../include
 	$(MAKE) -C kernel
