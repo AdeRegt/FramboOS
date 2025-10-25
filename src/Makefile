@@ -1,2 +1,2 @@
 all:
-	$(MAKE) -C bootloader COPYTO=../vfsroot/FRAMBOOS/BOOTLOADER.EFI
+	$(MAKE) -C bootloader COPYTO=../../../vfsroot/FRAMBOOS/BOOTLDR.EFI
