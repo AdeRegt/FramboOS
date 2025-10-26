@@ -1,4 +1,5 @@
 #include "bootloader.h"
+#include "debugger.h"
 
 typedef __builtin_va_list va_list;
 
@@ -7,8 +8,8 @@ typedef __builtin_va_list va_list;
 #define va_arg(a,b)    __builtin_va_arg(a,b)
 #define __va_copy(d,s) __builtin_va_copy((d),(s))
 
-#define BEELDSCHERM_OFFSET_X 100 
-#define BEELDSCHERM_OFFSET_Y 100
+#define BEELDSCHERM_OFFSET_X 5 
+#define BEELDSCHERM_OFFSET_Y 5
 
 #define BEELDSCHERM_ACHTERGROND_KLEUR 0xFF0000
 
@@ -58,8 +59,7 @@ void putc(char t);
 char *convertl(uint64_t num, int base);
 char *convert(uint32_t num, int base);
 void print_raw_string(char *message);
-void drawCharacter(PSF1_Font *font,char character,unsigned int colour,unsigned long xOff,unsigned long yOff);
+void drawCharacter(PSF1_Font *font,char character,unsigned int colour,unsigned long xOff,unsigned long yOff, uint8_t shadow);
 PSF1_Font *getDefaultFont();
 char *getDefaultPSFFontBuffer();
-void printk(char *format, ...);
-void drawCharacterInDefaultFont(char character, unsigned int colour, unsigned long x, unsigned long y);
+void drawCharacterInDefaultFont(char character, unsigned int colour, unsigned long x, unsigned long y, uint8_t shadow);
