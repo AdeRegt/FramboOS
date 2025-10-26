@@ -12,6 +12,10 @@ void kernel_main(BootInfo *bootinfo)
     //
     // geheugen initialiseren
     geheugen_initialiseer(bootinfo->memory_info);
+
+    //
+    // Klaar!
+    printk("Kernel initialisatie compleet!\n");
     
     while (1)
     {

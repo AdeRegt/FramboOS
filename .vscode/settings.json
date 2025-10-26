@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "efilib.h": "c",
-        "beeldscherm.h": "c"
-    }
-}

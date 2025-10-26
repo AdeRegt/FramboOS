@@ -13,5 +13,6 @@ void beeldscherm_laad(GraphicsInfo *grafische_info)
 
   //
   // een font inladen...
+  printk("FramboOS build %s - %s\n", __DATE__, __TIME__);
   printk("Grafisch systeem geladen met resolutie: %dx%d\n", graphics_info->Width, graphics_info->Height);
 }
