@@ -23,6 +23,11 @@
 #define MEMORY_MIN_SIZE_FOR_PAGING 0x200 // 2MB
 #define MEMORY_MIN_SIZE_FOR_ALLOCATION 0x20
 
+#define IDT_MAX_DESCRIPTORS 256
+
+#define IDT_TYPE_INTERRUPT_GATE 0x8E
+#define IDT_TYPE_TRAP_GATE      0x8F
+
 typedef struct{
     uint8_t present: 1;
     uint8_t readwrite: 1;
@@ -48,6 +53,30 @@ typedef struct{
     uint64_t page_table_index;
 }PageLookupResult;
 
+typedef struct __attribute__((packed)) {
+    uint16_t offset0;
+    uint16_t selector;
+    uint8_t ist;
+    uint8_t type_attr;
+    uint16_t offset1;
+    uint32_t offset2;
+    uint32_t ignore;
+}IDTDescEntry;
+_Static_assert(sizeof(IDTDescEntry) == 16, "IDTDescEntry must be 16 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint16_t Limit;
+    uint64_t Offset;
+} IDTR;
+
+typedef struct{
+    uint64_t ip;
+    uint64_t cs;
+    uint64_t flags;
+    uint64_t sp;
+    uint64_t ss;
+}interrupt_frame;
+
 extern void _KernelStart();
 extern void _KernelEnd();
 extern MemoryDescriptor *paging_geheugen_blok;
@@ -55,6 +84,11 @@ extern MemoryDescriptor *allocatie_geheugen_blok;
 extern MemoryDescriptor *kernel_geheugen_blok;
 extern PageTable *master_page_table;
 extern MemoryInfo *memory_info_pointer;
+extern void initialise_gdt();
+extern IDTR idtr;
+extern __attribute__ ((aligned(0x10))) IDTDescEntry idt[256];
+extern __attribute__((interrupt)) void default_interrupt_handler(interrupt_frame* frame);
+extern __attribute__((interrupt)) void error_interrupt_handler(interrupt_frame* frame);
 
 void geheugen_initialiseer(MemoryInfo *memory_info);
 char* geheugen_geheugenblok_type_naar_string(uint32_t type);
@@ -66,3 +100,9 @@ void define_page_memory_range_from_memory_descriptor(MemoryDescriptor *desc);
 void* alloc_page();
 void *memset(void *s, char val, uint64_t count);
 MemoryDescriptor* geheugenblok_van_address(uint64_t address);
+void outportb(uint16_t port, uint8_t value);
+uint8_t inportb(uint16_t port);
+void reset_pic();
+void sti();
+void cli();
+void idt_set_entry(IDTDescEntry *entry, void (*handler)(), uint16_t selector, uint8_t ist, uint8_t type_attr);

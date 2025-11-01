@@ -16,3 +16,8 @@ Installeer de directory
 ```
 make copy_to_sector COPYTO={map}
 ```
+
+## Technische gegevens
+### Algemeen
+ELF-64 met entry point op '0x150000'
+### Ondersteunende devices

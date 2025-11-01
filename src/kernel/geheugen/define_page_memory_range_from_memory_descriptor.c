@@ -1,13 +1,15 @@
 #include "geheugen.h"
 
 void define_page_memory_range_from_memory_descriptor(MemoryDescriptor *desc){
-    uint64_t physical_start = desc->PhysicalStart;
-    uint64_t number_of_pages = (( desc->NumberOfPages * MEMORY_PAGE_SIZE ) / PAGE_GAP_SIZE)+1;
+    const uint64_t LARGE_PAGE_SIZE = 2 * 1024 * 1024; // 2 MiB
+    uint64_t region_start = desc->PhysicalStart;
+    uint64_t region_size = desc->NumberOfPages * MEMORY_PAGE_SIZE;
+    uint64_t region_end = region_start + region_size;
 
-    for(uint64_t page = 0; page < number_of_pages; page++){
-        uint64_t physical_address = physical_start + (page * PAGE_GAP_SIZE);
-        uint64_t virtual_address = physical_address; // Identity mapping
+    // Align start to next 2 MiB boundary if needed
+    uint64_t aligned_start = (region_start + LARGE_PAGE_SIZE - 1) & ~(LARGE_PAGE_SIZE - 1);
 
-        map_memory(master_page_table, (void*)virtual_address, (void*)physical_address);
+    for(uint64_t addr = aligned_start; addr + LARGE_PAGE_SIZE <= region_end; addr += LARGE_PAGE_SIZE){
+        map_memory(master_page_table, (void*)addr, (void*)addr);
     }
 }
