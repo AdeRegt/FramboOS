@@ -20,8 +20,8 @@
 #define MEMORY_PAGE_SIZE 4096
 #define PAGE_GAP_SIZE 0x200000 // 2MB
 
-#define MEMORY_MIN_SIZE_FOR_PAGING 0x200 // 2MB
-#define MEMORY_MIN_SIZE_FOR_ALLOCATION 0x20
+#define MEMORY_MIN_SIZE_FOR_PAGING 0xA00 // 2MB
+#define MEMORY_MIN_SIZE_FOR_ALLOCATION 0xA00
 
 #define IDT_MAX_DESCRIPTORS 256
 
@@ -77,20 +77,30 @@ typedef struct{
     uint64_t ss;
 }interrupt_frame;
 
+typedef struct cpu_context {
+    uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
+    uint64_t rsi, rdi, rbp, rdx, rcx, rbx, rax;
+    uint64_t rip, rsp, rflags;
+} cpu_context_t;
+
 extern void _KernelStart();
 extern void _KernelEnd();
 extern MemoryDescriptor *paging_geheugen_blok;
 extern MemoryDescriptor *allocatie_geheugen_blok;
 extern MemoryDescriptor *kernel_geheugen_blok;
+extern MemoryDescriptor *video_geheugen_blok;
 extern PageTable *master_page_table;
 extern MemoryInfo *memory_info_pointer;
+extern cpu_context_t current_task;
 extern void initialise_gdt();
 extern IDTR idtr;
 extern __attribute__ ((aligned(0x10))) IDTDescEntry idt[256];
 extern __attribute__((interrupt)) void default_interrupt_handler(interrupt_frame* frame);
 extern __attribute__((interrupt)) void error_interrupt_handler(interrupt_frame* frame);
+extern void context_switch(cpu_context_t *old, cpu_context_t *new);
+extern void timer_interrupt_stub();
 
-void geheugen_initialiseer(MemoryInfo *memory_info);
+void geheugen_initialiseer(BootInfo *memory_info);
 char* geheugen_geheugenblok_type_naar_string(uint32_t type);
 void geheugen_kaart_debug(MemoryDescriptor *desc);
 PageLookupResult page_map_indexer(uint64_t virtual_address);
@@ -106,3 +116,4 @@ void reset_pic();
 void sti();
 void cli();
 void idt_set_entry(IDTDescEntry *entry, void (*handler)(), uint16_t selector, uint8_t ist, uint8_t type_attr);
+void timer_interrupt_handler();

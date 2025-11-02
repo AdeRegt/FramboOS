@@ -1,7 +1,8 @@
 #include "geheugen.h"
 
-void geheugen_initialiseer(MemoryInfo *memory_info)
+void geheugen_initialiseer(BootInfo *meme)
 {
+    MemoryInfo *memory_info = meme->memory_info;
     // Hier komt de code om het geheugen te initialiseren
     printk("Geheugen initialisatie gestart...\n");
     allocatie_geheugen_blok = NULL;
@@ -10,6 +11,10 @@ void geheugen_initialiseer(MemoryInfo *memory_info)
     for(uint64_t offset = 0; offset < memory_info->mMapSize; offset += memory_info->mMapDescSize)
     {
         MemoryDescriptor *desc = (MemoryDescriptor *)((uint64_t)memory_info->mMap + offset);
+        if(desc->VirtualStart!=desc->PhysicalStart&&desc->VirtualStart){
+            printk("Fout: Niet-identity mapping gevonden in memory map! PhysicalStart: %lx, VirtualStart: %lx\n", desc->PhysicalStart, desc->VirtualStart);
+            for(;;);
+        }
         desc->VirtualStart = desc->PhysicalStart; // Identity mapping instellen
         if(desc->Type == MEMORY_TYPE_CONVENTIONAL_MEMORY && desc->PhysicalStart >= (uint64_t)_KernelEnd)
         {
@@ -26,9 +31,18 @@ void geheugen_initialiseer(MemoryInfo *memory_info)
         }
     }
     kernel_geheugen_blok = geheugenblok_van_address((uint64_t)geheugen_initialiseer);
-    if(allocatie_geheugen_blok == NULL || paging_geheugen_blok == NULL || kernel_geheugen_blok == NULL)
+    video_geheugen_blok = geheugenblok_van_address((uint64_t)meme->graphics_info->BaseAddress);
+    if(allocatie_geheugen_blok == NULL)
     {
-        printk("Niet genoeg geheugen gevonden voor allocatie of paging of kernel!\n");for(;;);
+        printk("Niet genoeg geheugen gevonden voor allocatie\n");for(;;);
+    }
+    if(paging_geheugen_blok == NULL)
+    {
+        printk("Niet genoeg geheugen gevonden voor paging\n");for(;;);
+    }
+    if(kernel_geheugen_blok == NULL)
+    {
+        printk("Niet genoeg geheugen gevonden voor kernel\n");for(;;);
     }
     printk("De kernel begint op %lx en eindigd op %lx en beslaat dus %lx \n",_KernelStart, _KernelEnd, (_KernelEnd - _KernelStart));
     
@@ -41,18 +55,25 @@ void geheugen_initialiseer(MemoryInfo *memory_info)
 
     #ifdef ENABLE_PAGING
     master_page_table = alloc_page();
-    // en nu de precieze mapping volgens de memory descriptors
+    //en nu de precieze mapping volgens de memory descriptors
     for(uint64_t offset = 0; offset < memory_info->mMapSize; offset += memory_info->mMapDescSize)
     {
         MemoryDescriptor *desc = (MemoryDescriptor *)((uint64_t)memory_info->mMap + offset);
-        if(desc->Type == MEMORY_TYPE_CONVENTIONAL_MEMORY || desc->Type == MEMORY_TYPE_BOOT_SERVICES_CODE || desc->Type == MEMORY_TYPE_BOOT_SERVICES_DATA || desc->Type == MEMORY_TYPE_ACPI_RECLAIM_MEMORY || desc->Type == MEMORY_TYPE_ACPI_MEMORY_NVS){
+        if(desc->Type == MEMORY_TYPE_BOOT_SERVICES_CODE || desc->Type == MEMORY_TYPE_BOOT_SERVICES_DATA || desc->Type == MEMORY_TYPE_ACPI_RECLAIM_MEMORY || desc->Type == MEMORY_TYPE_ACPI_MEMORY_NVS){
             define_page_memory_range_from_memory_descriptor(desc);
         }
+    }
+    for(uint64_t valve = 0 ; valve < (0xFFFFF000/PAGE_GAP_SIZE) ; valve++){
+        define_linear_memory_block((void*)(valve*PAGE_GAP_SIZE));
     }
     define_page_memory_range_from_memory_descriptor(allocatie_geheugen_blok);
     define_page_memory_range_from_memory_descriptor(paging_geheugen_blok);
     define_page_memory_range_from_memory_descriptor(kernel_geheugen_blok);
-    // asm volatile ("mov %0, %%cr3" : : "r" (master_page_table));
+    map_memory(master_page_table, (void*)meme->graphics_info->BaseAddress, (void*)meme->graphics_info->BaseAddress);
+    for(int i = 0 ; i < 5 ; i++){
+        map_memory(master_page_table, (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)), (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)));
+    }
+    asm volatile ("mov %0, %%cr3" : : "r" (master_page_table));
     #else 
     printk("waarschuwing: Paging is uitgeschakeld.\n");
     #endif
@@ -96,7 +117,7 @@ void geheugen_initialiseer(MemoryInfo *memory_info)
     idt_set_entry(&idt[0x1D], error_interrupt_handler, 0x08, 0, IDT_TYPE_INTERRUPT_GATE);
     idt_set_entry(&idt[0x1E], error_interrupt_handler, 0x08, 0, IDT_TYPE_INTERRUPT_GATE);
     idt_set_entry(&idt[0x1F], error_interrupt_handler, 0x08, 0, IDT_TYPE_INTERRUPT_GATE);
-    idt_set_entry(&idt[0x20], default_interrupt_handler, 0x08, 0, IDT_TYPE_INTERRUPT_GATE);
+    idt_set_entry(&idt[0x20], timer_interrupt_stub, 0x08, 0, IDT_TYPE_INTERRUPT_GATE);
     idt_set_entry(&idt[0x21], default_interrupt_handler, 0x08, 0, IDT_TYPE_INTERRUPT_GATE);
     asm volatile ("lidt %0" : : "m"(idtr));
     sti();

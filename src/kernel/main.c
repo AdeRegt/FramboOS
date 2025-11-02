@@ -11,7 +11,7 @@ void kernel_main(BootInfo *bootinfo)
 
     //
     // geheugen initialiseren
-    geheugen_initialiseer(bootinfo->memory_info);
+    geheugen_initialiseer(bootinfo);
 
     //
     // Klaar!
