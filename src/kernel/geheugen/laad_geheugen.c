@@ -1,6 +1,6 @@
 #include "geheugen.h"
 
-void geheugen_initialiseer(BootInfo *meme)
+void laad_geheugen(BootInfo *meme)
 {
     MemoryInfo *memory_info = meme->memory_info;
     // Hier komt de code om het geheugen te initialiseren
@@ -30,7 +30,7 @@ void geheugen_initialiseer(BootInfo *meme)
             }
         }
     }
-    kernel_geheugen_blok = geheugenblok_van_address((uint64_t)geheugen_initialiseer);
+    kernel_geheugen_blok = geheugenblok_van_address((uint64_t)laad_geheugen);
     video_geheugen_blok = geheugenblok_van_address((uint64_t)meme->graphics_info->BaseAddress);
     if(allocatie_geheugen_blok == NULL)
     {

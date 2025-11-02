@@ -1,6 +1,6 @@
 #include "beeldscherm.h"
 
-void beeldscherm_laad(GraphicsInfo *grafische_info)
+void laad_beeldscherm(GraphicsInfo *grafische_info)
 {
 
   //

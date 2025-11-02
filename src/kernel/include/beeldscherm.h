@@ -43,7 +43,7 @@ extern int beeldscherm_y;
 /**
  * Laadt de grafische informatie en maakt het scherm leeg.
  */
-void beeldscherm_laad(GraphicsInfo *grafische_info);
+void laad_beeldscherm(GraphicsInfo *grafische_info);
 
 /**
  * Maakt het beeldscherm leeg door alle pixels op een vaste kleur te zetten.

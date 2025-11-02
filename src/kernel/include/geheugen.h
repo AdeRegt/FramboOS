@@ -100,7 +100,7 @@ extern __attribute__((interrupt)) void error_interrupt_handler(interrupt_frame* 
 extern void context_switch(cpu_context_t *old, cpu_context_t *new);
 extern void timer_interrupt_stub();
 
-void geheugen_initialiseer(BootInfo *memory_info);
+void laad_geheugen(BootInfo *memory_info);
 char* geheugen_geheugenblok_type_naar_string(uint32_t type);
 void geheugen_kaart_debug(MemoryDescriptor *desc);
 PageLookupResult page_map_indexer(uint64_t virtual_address);
@@ -117,3 +117,5 @@ void sti();
 void cli();
 void idt_set_entry(IDTDescEntry *entry, void (*handler)(), uint16_t selector, uint8_t ist, uint8_t type_attr);
 void timer_interrupt_handler();
+void outportl(uint16_t port, uint32_t value);
+uint32_t inportl(uint16_t port);

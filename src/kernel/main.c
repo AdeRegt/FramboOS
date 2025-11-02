@@ -1,17 +1,21 @@
 #include "bootloader.h"
 #include "beeldscherm.h"
-#include "geheugen.h"
+#include "pci.h"
 
 void kernel_main(BootInfo *bootinfo)
 {
 
     //
     // beelscherm initialiseren
-    beeldscherm_laad(bootinfo->graphics_info);
+    laad_beeldscherm(bootinfo->graphics_info);
 
     //
     // geheugen initialiseren
-    geheugen_initialiseer(bootinfo);
+    laad_geheugen(bootinfo);
+
+    //
+    // PCI apparaten initialiseren
+    laad_pci();
 
     //
     // Klaar!
