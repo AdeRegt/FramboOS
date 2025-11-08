@@ -1,0 +1,68 @@
+#include "xhci.h"
+
+// XHCI specification:
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+
+
+void laad_xhci(pci_class* xhci_device)
+{
+    base_xhci_address = (void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0);
+    printk("XHCI is beschikbaar op IRQ %d met BAR0 %x \n", xhci_device->interrupt, base_xhci_address);
+
+    //
+    // Dit is de xhci interrupt handler installatie
+    //
+    install_device_interrupt(xhci_device, xhci_interrupt_handler);
+
+    //
+    // Voer BIOS handoff uit
+    //
+    perform_bios_handoff();
+
+    //
+    // Schakel bus mastering in
+    //
+    pci_enable_busmastering(xhci_device->bus, xhci_device->slot, xhci_device->function);
+
+    //
+    // Stop controller
+    //
+    xhci_stop();
+
+    //
+    // Reset controller
+    //
+    xhci_reset();
+
+    //
+    // Wacht tot de controller klaar is
+    //
+    wait_for_controller_not_ready();
+
+    //
+    // Maximale poorten instellen 
+    //
+    xhci_set_max_ports();
+
+    //
+    // Stel DCBAAP in en scratchpad buffers als die er zijn
+    //
+    xhci_setup_dcbaap();
+
+    //
+    // Stel de Command Ring in
+    //
+    xhci_setup_commandring();
+
+    //
+    // Stel de Event Ring in
+    //
+    xhci_setup_eventring();
+
+    IMAN (0) = 0b11;
+	IMOD (0) = 0;
+	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
+    sleep(100);
+
+    printk("XHCI controller is klaar voor gebruik.\n");
+}

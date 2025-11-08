@@ -28,6 +28,26 @@
 #define IDT_TYPE_INTERRUPT_GATE 0x8E
 #define IDT_TYPE_TRAP_GATE      0x8F
 
+#define IDT_OFFSET 0x20
+
+#define GDT_KERNEL_CODE 0x08
+
+#define PIC1		0x20		/* IO base address for master PIC */
+#define PIC2		0xA0		/* IO base address for slave PIC */
+#define PIC1_COMMAND	PIC1
+#define PIC1_DATA	(PIC1+1)
+#define PIC2_COMMAND	PIC2
+#define PIC2_DATA	(PIC2+1)
+
+#define IA32_APIC_BASE_MSR 0x1B
+#define IA32_APIC_BASE_BSP (1 << 8)
+#define IA32_APIC_BASE_ENABLE (1 << 11)
+
+#define LAPIC_BASE 0xFEE00000
+#define LAPIC_REG(offset) (*(volatile uint32_t*)((uintptr_t)LAPIC_BASE + (offset)))
+
+#define LAPIC_SVR 0xF0  // Spurious Interrupt Vector Register
+
 typedef struct{
     uint8_t present: 1;
     uint8_t readwrite: 1;
@@ -119,3 +139,10 @@ void idt_set_entry(IDTDescEntry *entry, void (*handler)(), uint16_t selector, ui
 void timer_interrupt_handler();
 void outportl(uint16_t port, uint32_t value);
 uint32_t inportl(uint16_t port);
+void acknowledge_interrupt();
+void sleep(uint32_t timer);
+void cpuid(uint32_t eax, uint32_t *a, uint32_t *b, uint32_t *c, uint32_t *d);
+uint64_t read_msr(uint32_t msr);
+uint8_t check_apic();
+void enable_lapic();
+void write_msr(uint32_t msr, uint64_t value);
