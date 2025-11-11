@@ -12,4 +12,17 @@ void enable_lapic()
     uint32_t id   = LAPIC_REG(0x20);  // LAPIC ID Register
     uint32_t ver  = LAPIC_REG(0x30);  // LAPIC Version Register
     printk("LAPIC ID: %x, Version: %x\n", id , ver);
+
+    //
+    // LAPIC instellen met interrupts
+    //
+
+    // stel deivision in
+    LAPIC_REG(0x3E0) = 0x3; // 0b011 = divide by 16
+
+    // timer vector en mode instellen
+    LAPIC_REG(0x320) = (0x20000) | 0x20 ; // periodic mode, vector 0xFF
+
+    // afloop instellen
+    LAPIC_REG(0x380) = 0x100000; // initial count
 }

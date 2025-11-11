@@ -117,8 +117,10 @@ void laad_geheugen(BootInfo *meme)
     idt_set_entry(&idt[0x1D], error_interrupt_handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
     idt_set_entry(&idt[0x1E], error_interrupt_handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
     idt_set_entry(&idt[0x1F], error_interrupt_handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
-    idt_set_entry(&idt[IDT_OFFSET+0], timer_interrupt_stub, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
-    idt_set_entry(&idt[IDT_OFFSET+1], default_interrupt_handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
+    for(int i = IDT_OFFSET ; i < 0xFF ; i++)
+    {
+        idt_set_entry(&idt[i], default_interrupt_handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
+    }
     asm volatile ("lidt %0" : : "m"(idtr));
     sti();
     printk("PIC reset\n");
