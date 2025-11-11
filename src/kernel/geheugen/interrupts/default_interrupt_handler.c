@@ -1,6 +1,9 @@
 #include "geheugen.h"
 
 INTERRUPT default_interrupt_handler(interrupt_frame* frame){
-  printk("Interrupt fired!\n");
+  uint8_t int_num = get_active_int();
+  if(int_num != 0xFF){
+    printk("Onbekende interrupt ontvangen: %d\n", int_num);
+  }
   acknowledge_interrupt();
 }

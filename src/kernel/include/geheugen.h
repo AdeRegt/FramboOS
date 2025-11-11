@@ -146,3 +146,4 @@ uint64_t read_msr(uint32_t msr);
 uint8_t check_apic();
 void enable_lapic();
 void write_msr(uint32_t msr, uint64_t value);
+uint8_t get_active_int();
