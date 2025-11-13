@@ -1,6 +1,6 @@
 #include "xhci.h"
 
-void xhci_set_max_ports()
+void xhci_set_max_ports(XHCIControllerSession *session)
 {
     //
     // Maximale poorten instellen 

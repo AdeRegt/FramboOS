@@ -1,19 +1,21 @@
 #include "xhci.h"
 
-void xhci_setup_commandring()
+void xhci_setup_commandring(XHCIControllerSession *session)
 {
+    session->xhci_command_ring = (uint32_t*) alloc_page();
+
     //
     // Initialiseer de Command Ring
     //
     for (int i = 0; i < XHCI_COMMAND_RING_SIZE*4; i++)
     {
-        xhci_command_ring[i] = 0;
+        session->xhci_command_ring[i] = 0;
     }
 
     //
     // Stel de Command Ring Pointer in
     //
-    CRCR_L = (uint64_t)(uintptr_t)xhci_command_ring;
+    CRCR_L = (uint64_t)(uintptr_t)session->xhci_command_ring;
     CRCR_H = 0;
 
     //

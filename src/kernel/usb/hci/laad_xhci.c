@@ -6,8 +6,10 @@
 
 void laad_xhci(pci_class* xhci_device)
 {
-    base_xhci_address = (void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0);
-    printk("XHCI is beschikbaar op IRQ %d met BAR0 %x \n", xhci_device->interrupt, base_xhci_address);
+    XHCIControllerSession* session = &xhci_session[xhci_session_count++];
+    session->pci_device = xhci_device;
+    session->base_xhci_address = (void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0);
+    printk("XHCI is beschikbaar op IRQ %d met BAR0 %x \n", xhci_device->interrupt, session->base_xhci_address);
 
     //
     // Dit is de xhci interrupt handler installatie
@@ -17,7 +19,7 @@ void laad_xhci(pci_class* xhci_device)
     //
     // Voer BIOS handoff uit
     //
-    perform_bios_handoff();
+    perform_bios_handoff(session);
 
     //
     // Schakel bus mastering in
@@ -27,37 +29,37 @@ void laad_xhci(pci_class* xhci_device)
     //
     // Stop controller
     //
-    xhci_stop();
+    xhci_stop(session);
 
     //
     // Reset controller
     //
-    xhci_reset();
+    xhci_reset(session);
 
     //
     // Wacht tot de controller klaar is
     //
-    wait_for_controller_not_ready();
+    wait_for_controller_not_ready(session);
 
     //
     // Maximale poorten instellen 
     //
-    xhci_set_max_ports();
+    xhci_set_max_ports(session);
 
     //
     // Stel DCBAAP in en scratchpad buffers als die er zijn
     //
-    xhci_setup_dcbaap();
+    xhci_setup_dcbaap(session);
 
     //
     // Stel de Command Ring in
     //
-    xhci_setup_commandring();
+    xhci_setup_commandring(session);
 
     //
     // Stel de Event Ring in
     //
-    xhci_setup_eventring();
+    xhci_setup_eventring(session);
 
     IMAN (0) = 0b11;
 	IMOD (0) = 0;

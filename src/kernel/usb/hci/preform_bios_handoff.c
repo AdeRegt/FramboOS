@@ -1,11 +1,11 @@
 #include "xhci.h"
 
-void perform_bios_handoff()
+void perform_bios_handoff(XHCIControllerSession *session)
 {
-	uint32_t capapointer = (((uint32_t *)(base_xhci_address + 0x10))[0] >> 16) << 2;
+	uint32_t capapointer = (((uint32_t *)(session->base_xhci_address + 0x10))[0] >> 16) << 2;
 	if (capapointer)
 	{
-		void *cappointer = capapointer + base_xhci_address;
+		void *cappointer = capapointer + session->base_xhci_address;
 		int captimeout = 10000;
 		int i = 10;
 		while (i)

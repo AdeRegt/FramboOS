@@ -1,6 +1,6 @@
 #include "xhci.h"
 
-void xhci_stop()
+void xhci_stop(XHCIControllerSession *session)
 {
 	if(USBCMD_RS){
 		// yes, we do run!

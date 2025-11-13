@@ -1,6 +1,6 @@
 #include "xhci.h"
 
-void wait_for_controller_not_ready()
+void wait_for_controller_not_ready(XHCIControllerSession *session)
 {
     //
     // Wacht tot de controller niet meer klaar is

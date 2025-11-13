@@ -1,37 +1,37 @@
 #include "pci.h"
 
-#define CAPLENGTH ((uint8_t*)base_xhci_address)[0]
-#define HCIVERSION ((uint16_t*)( base_xhci_address + 0x02 ))[0]
-#define HCSPARAMS1 ((uint32_t*)( base_xhci_address + 0x04 ))[0]
-#define HCSPARAMS2 ((uint32_t*)( base_xhci_address + 0x08 ))[0]
-#define HCSPARAMS3 ((uint32_t*)( base_xhci_address + 0x0C ))[0]
-#define HCCPARAMS1 ((uint32_t*)( base_xhci_address + 0x10 ))[0]
-#define DBOFF ((uint32_t*)( base_xhci_address + 0x14 ))[0]
-#define RTSOFF ((uint32_t*)( base_xhci_address + 0x18 ))[0]
-#define HCCPARAMS2 ((uint32_t*)( base_xhci_address + 0x1C ))[0]
-#define VTIOSOFF ((uint32_t*)( base_xhci_address + 0x20 ))[0]
+#define CAPLENGTH ((uint8_t*)session->base_xhci_address)[0]
+#define HCIVERSION ((uint16_t*)( session->base_xhci_address + 0x02 ))[0]
+#define HCSPARAMS1 ((uint32_t*)( session->base_xhci_address + 0x04 ))[0]
+#define HCSPARAMS2 ((uint32_t*)( session->base_xhci_address + 0x08 ))[0]
+#define HCSPARAMS3 ((uint32_t*)( session->base_xhci_address + 0x0C ))[0]
+#define HCCPARAMS1 ((uint32_t*)( session->base_xhci_address + 0x10 ))[0]
+#define DBOFF ((uint32_t*)( session->base_xhci_address + 0x14 ))[0]
+#define RTSOFF ((uint32_t*)( session->base_xhci_address + 0x18 ))[0]
+#define HCCPARAMS2 ((uint32_t*)( session->base_xhci_address + 0x1C ))[0]
+#define VTIOSOFF ((uint32_t*)( session->base_xhci_address + 0x20 ))[0]
 
-#define USBCMD ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x00 ))[0]
-#define USBSTS ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x04 ))[0]
-#define PAGESIZE ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x08 ))[0]
-#define DNCTRL ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x14 ))[0]
-#define CRCR_L ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x18 ))[0]
-#define CRCR_H ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x18 + 4 ))[0]
-#define DCBAAP_L ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x30 ))[0]
-#define DCBAAP_H ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x30 + 4 ))[0]
-#define CONFIG ((uint32_t*)( base_xhci_address + CAPLENGTH + 0x38 ))[0]
-#define PORTSC(n) ((uint32_t*)( base_xhci_address + CAPLENGTH + (0x400 + (0x10 * n)) ))[0]
+#define USBCMD ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x00 ))[0]
+#define USBSTS ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x04 ))[0]
+#define PAGESIZE ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x08 ))[0]
+#define DNCTRL ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x14 ))[0]
+#define CRCR_L ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x18 ))[0]
+#define CRCR_H ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x18 + 4 ))[0]
+#define DCBAAP_L ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x30 ))[0]
+#define DCBAAP_H ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x30 + 4 ))[0]
+#define CONFIG ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x38 ))[0]
+#define PORTSC(n) ((uint32_t*)( session->base_xhci_address + CAPLENGTH + (0x400 + (0x10 * n)) ))[0]
 
-#define MFINDEX ((uint32_t*)( base_xhci_address + RTSOFF + 0x00 ))[0]
-#define IMAN(n) ((uint32_t*)( base_xhci_address + RTSOFF + 0x20 + (32*n) ))[0]
-#define IMOD(n) ((uint32_t*)( base_xhci_address + RTSOFF + 0x24 + (32*n) ))[0]
-#define ERSTSZ(n) ((uint32_t*)( base_xhci_address + RTSOFF + 0x28 + (32*n) ))[0]
-#define ERSTBA_L(n) ((uint64_t*)( base_xhci_address + RTSOFF + 0x30 + (32*n) ))[0]
-#define ERSTBA_H(n) ((uint64_t*)( base_xhci_address + RTSOFF + 0x30 + 4 + (32*n) ))[0]
-#define ERDP_L(n) ((uint64_t*)( base_xhci_address + RTSOFF + 0x38 + (32*n) ))[0]
-#define ERDP_H(n) ((uint64_t*)( base_xhci_address + RTSOFF + 0x38 + 4 + (32*n) ))[0]
+#define MFINDEX ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x00 ))[0]
+#define IMAN(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x20 + (32*n) ))[0]
+#define IMOD(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x24 + (32*n) ))[0]
+#define ERSTSZ(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x28 + (32*n) ))[0]
+#define ERSTBA_L(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x30 + (32*n) ))[0]
+#define ERSTBA_H(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x30 + 4 + (32*n) ))[0]
+#define ERDP_L(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x38 + (32*n) ))[0]
+#define ERDP_H(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x38 + 4 + (32*n) ))[0]
 
-#define DOORBELL ((uint32_t*) ( base_xhci_address + DBOFF ))
+#define DOORBELL ((uint32_t*) ( session->base_xhci_address + DBOFF ))
 
 #define HCSPARAMS1_MASK_MaxSlots 0xFF
 #define HCSPARAMS1_MaxSlots ( HCSPARAMS1 & HCSPARAMS1_MASK_MaxSlots )
@@ -181,19 +181,30 @@ typedef struct{
     uint32_t reservedB;
 }__attribute__((packed)) XHCIEventRingSegmentTable;
 
-extern void* base_xhci_address;
-extern uint64_t device_context_base_address_array[XHCI_MAX_SLOTS + 1];
-extern uint32_t xhci_command_ring[XHCI_COMMAND_RING_SIZE*4];
-extern XHCIEventRingSegmentTable xhci_event_ring_segment_table;
-extern uint32_t xhci_event_ring[XHCI_EVENT_RING_SIZE*4];
+typedef struct {
+    pci_class* pci_device;
+    void* base_xhci_address;
+    uint64_t* device_context_base_address_array;
+    uint32_t* xhci_command_ring;
+    XHCIEventRingSegmentTable* xhci_event_ring_segment_table;
+    uint32_t* xhci_event_ring;
+}__attribute__((packed)) XHCIControllerSession;
+
+extern XHCIControllerSession xhci_session[10];
+extern int xhci_session_count;
+
+// extern uint64_t device_context_base_address_array[XHCI_MAX_SLOTS + 1];
+// extern uint32_t xhci_command_ring[XHCI_COMMAND_RING_SIZE*4];
+// extern XHCIEventRingSegmentTable xhci_event_ring_segment_table;
+// extern uint32_t xhci_event_ring[XHCI_EVENT_RING_SIZE*4];
 
 void laad_xhci(pci_class* xhci_device);
 __attribute__((interrupt)) void xhci_interrupt_handler(interrupt_frame* frame);
-void perform_bios_handoff();
-void xhci_stop();
-void xhci_reset();
-void wait_for_controller_not_ready();
-void xhci_setup_dcbaap();
-void xhci_setup_commandring();
-void xhci_setup_eventring();
-void xhci_set_max_ports();
+void perform_bios_handoff(XHCIControllerSession *session);
+void xhci_stop(XHCIControllerSession *session);
+void xhci_reset(XHCIControllerSession *session);
+void wait_for_controller_not_ready(XHCIControllerSession *session);
+void xhci_setup_dcbaap(XHCIControllerSession *session);
+void xhci_setup_commandring(XHCIControllerSession *session);
+void xhci_setup_eventring(XHCIControllerSession *session);
+void xhci_set_max_ports(XHCIControllerSession *session);
