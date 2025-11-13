@@ -121,6 +121,11 @@ void laad_geheugen(BootInfo *meme)
     {
         idt_set_entry(&idt[i], default_interrupt_handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
     }
+    current_task = 0;
+    max_task = 1;
+    memset(&ct, 0, sizeof(task_t)*50);
+    memcpy(ct[0].name, "Kernel main loop", 32);
+    idt_set_entry(&idt[LAPIC_TIMER_VECTOR], taskswitchstub, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
     asm volatile ("lidt %0" : : "m"(idtr));
     sti();
     printk("PIC reset\n");

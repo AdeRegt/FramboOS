@@ -8,6 +8,7 @@
 #define PCI_DATA 0xCFC
 
 #define PCI_CAP_ID_MSI 0x05
+#define PCI_CAP_ID_MSIX 0x11
 #define PCI_CAP_PTR    0x34
 
 #define PCI_CLASS_CODE_SERIAL_BUS_CONTROLLER 0x0C

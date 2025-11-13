@@ -48,6 +48,8 @@
 
 #define LAPIC_SVR 0xF0  // Spurious Interrupt Vector Register
 
+#define LAPIC_TIMER_VECTOR 0x20
+
 typedef struct{
     uint8_t present: 1;
     uint8_t readwrite: 1;
@@ -103,6 +105,13 @@ typedef struct cpu_context {
     uint64_t rip, rsp, rflags;
 } cpu_context_t;
 
+typedef struct {
+    cpu_context_t context;
+    uint8_t state; // 0 = inactive, 1 = active
+    uint64_t timer;
+    char name[32];
+} task_t;
+
 extern void _KernelStart();
 extern void _KernelEnd();
 extern MemoryDescriptor *paging_geheugen_blok;
@@ -111,14 +120,14 @@ extern MemoryDescriptor *kernel_geheugen_blok;
 extern MemoryDescriptor *video_geheugen_blok;
 extern PageTable *master_page_table;
 extern MemoryInfo *memory_info_pointer;
-extern cpu_context_t current_task;
 extern void initialise_gdt();
 extern IDTR idtr;
 extern __attribute__ ((aligned(0x10))) IDTDescEntry idt[256];
 extern __attribute__((interrupt)) void default_interrupt_handler(interrupt_frame* frame);
 extern __attribute__((interrupt)) void error_interrupt_handler(interrupt_frame* frame);
-extern void context_switch(cpu_context_t *old, cpu_context_t *new);
-extern void timer_interrupt_stub();
+extern task_t ct[10];
+extern int current_task;
+extern int max_task;
 
 void laad_geheugen(BootInfo *memory_info);
 char* geheugen_geheugenblok_type_naar_string(uint32_t type);
@@ -136,7 +145,6 @@ void reset_pic();
 void sti();
 void cli();
 void idt_set_entry(IDTDescEntry *entry, void (*handler)(), uint16_t selector, uint8_t ist, uint8_t type_attr);
-void timer_interrupt_handler();
 void outportl(uint16_t port, uint32_t value);
 uint32_t inportl(uint16_t port);
 void acknowledge_interrupt();
@@ -147,3 +155,7 @@ uint8_t check_apic();
 void enable_lapic();
 void write_msr(uint32_t msr, uint64_t value);
 uint8_t get_active_int();
+void taskswitchstub();
+cpu_context_t* scheduler_tick(cpu_context_t* current);
+void memcpy(void* dest, const void* src, uint64_t n);
+void task_create(char* name, void (*func)());

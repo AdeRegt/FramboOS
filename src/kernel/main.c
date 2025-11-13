@@ -20,7 +20,7 @@ void kernel_main(BootInfo *bootinfo)
     //
     // Klaar!
     printk("Kernel initialisatie compleet!\n");
-    
+
     while (1)
     {
         // Kernel loop

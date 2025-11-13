@@ -6,6 +6,11 @@ void putc(char t)
     {
         beeldscherm_x = BEELDSCHERM_OFFSET_X;
         beeldscherm_y += BEELDSCHERM_FONT_HEIGHT + BEELDSCHERM_FONT_RUIMTE;
+        if(beeldscherm_y > graphics_info->Height){
+            beeldscherm_leeg();
+            beeldscherm_x = BEELDSCHERM_OFFSET_X;
+            beeldscherm_y = BEELDSCHERM_OFFSET_Y;
+        }
         return;
     }
     if(t=='\t')

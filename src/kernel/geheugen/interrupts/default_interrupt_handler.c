@@ -2,8 +2,6 @@
 
 INTERRUPT default_interrupt_handler(interrupt_frame* frame){
   uint8_t int_num = get_active_int();
-  if(int_num != 0xFF){
-    printk("Onbekende interrupt ontvangen: %d\n", int_num);
-  }
+  printk("Onbekende interrupt ontvangen: %d\n", int_num);
   acknowledge_interrupt();
 }

@@ -52,3 +52,5 @@ GDT:
     .Pointer:
         dw $ - GDT - 1
         dq GDT
+
+%include "geheugen/task/taskswitchstub.asm"

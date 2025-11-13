@@ -1,3 +1,3 @@
 #include "geheugen.h"
 
-int current_task = 0;
+task_t ct[10];

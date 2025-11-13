@@ -21,7 +21,7 @@ void enable_lapic()
     LAPIC_REG(0x3E0) = 0x3; // 0b011 = divide by 16
 
     // timer vector en mode instellen
-    LAPIC_REG(0x320) = (0x20000) | 0x20 ; // periodic mode, vector 0xFF
+    LAPIC_REG(0x320) = (0x20000) | LAPIC_TIMER_VECTOR ; // periodic mode, vector 0xFF
 
     // afloop instellen
     LAPIC_REG(0x380) = 0x100000; // initial count
