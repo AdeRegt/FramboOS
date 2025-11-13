@@ -208,3 +208,4 @@ void xhci_setup_dcbaap(XHCIControllerSession *session);
 void xhci_setup_commandring(XHCIControllerSession *session);
 void xhci_setup_eventring(XHCIControllerSession *session);
 void xhci_set_max_ports(XHCIControllerSession *session);
+void event_watcher();

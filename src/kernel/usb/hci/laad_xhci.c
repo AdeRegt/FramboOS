@@ -61,6 +61,8 @@ void laad_xhci(pci_class* xhci_device)
     //
     xhci_setup_eventring(session);
 
+    task_create("xhci_event_watcher", event_watcher);
+
     IMAN (0) = 0b11;
 	IMOD (0) = 0;
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
