@@ -26,7 +26,8 @@ void event_watcher()
                             printk("XHCI Event Watcher: Transfer Event gedetecteerd\n");
                             break;
                         case 33: // Command Completion Event
-                            printk("XHCI Event Watcher: Command Completion Event gedetecteerd\n");
+                            CommandCompletionEventTRB* cc_event = (CommandCompletionEventTRB*)&event_ring[c*4];
+                            xhci_handle_command_completion_event(session, cc_event);
                             break;
                         case 34: // Port Status Change Event
                             PortStatusChangeEventTransferRequestBlock* psc_event = (PortStatusChangeEventTransferRequestBlock*)&event_ring[c*4];

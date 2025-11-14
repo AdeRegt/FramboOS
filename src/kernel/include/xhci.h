@@ -186,6 +186,7 @@ typedef struct{
 typedef struct {
     uint8_t physical_port_id;
     void* pointer_to_requested_trb;
+    uint8_t slot_id;
 }__attribute__((packed)) USBDevice;
 
 typedef struct {
@@ -223,6 +224,18 @@ typedef struct{
      uint16_t RsvdZ2:11;
 }__attribute__((packed)) EnableSlotCommandTRB;
 
+typedef struct{
+    uint32_t DataBufferPointerLo;
+    uint32_t DataBufferPointerHi;
+    uint32_t CommandCompletionParameter:24;
+    uint16_t CompletionCode:8;
+    uint8_t C:1;
+    uint16_t reserved3:9;
+    uint8_t TRBType:6;
+    uint32_t VFID:8;
+    uint32_t SlotID:8;
+}__attribute__((packed)) CommandCompletionEventTRB;
+
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;
 
@@ -245,3 +258,4 @@ void event_watcher();
 void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusChangeEventTransferRequestBlock* psc_event);
 void xhci_send_enable_slot(XHCIControllerSession *session, USBDevice* device);
 void xhci_thingdong(XHCIControllerSession *session, USBDevice* device, void* trb);
+void xhci_handle_command_completion_event(XHCIControllerSession *session, CommandCompletionEventTRB* cc_event);

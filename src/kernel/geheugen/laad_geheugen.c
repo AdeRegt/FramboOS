@@ -48,7 +48,6 @@ void laad_geheugen(BootInfo *meme)
     
     #ifdef ENABLE_GDT 
     initialise_gdt();
-    printk("GDT geactiveerd.\n");
     #else 
     printk("waarschuwing: GDT is uitgeschakeld.\n");
     #endif 
@@ -128,7 +127,6 @@ void laad_geheugen(BootInfo *meme)
     idt_set_entry(&idt[LAPIC_TIMER_VECTOR], taskswitchstub, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
     asm volatile ("lidt %0" : : "m"(idtr));
     sti();
-    printk("PIC reset\n");
     #else 
     printk("waarschuwing: Interrupts zijn uitgeschakeld.\n");
     #endif
