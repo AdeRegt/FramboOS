@@ -10,17 +10,9 @@ void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusCha
         // de poort is uitgeschkeld
         // we kunnen hem inschakelen 
         PORTSC(calculatedportid) |= 0b00000000000000000000000000010000; // Poort resetten
-        sleep(100);
-        while(PORTSC_PR(calculatedportid))
-        {
-            sleep(100);
-        }
-        while(PORTSC_PED(calculatedportid)==0)
-        {
-            sleep(100);
-        }
         return;
     }
+    PORTSC(calculatedportid) |= 0x200000;
 
     switch(completion_code) {
         case 1: // Success
@@ -36,5 +28,11 @@ void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusCha
             printk("XHCI Handle Port Change Event: Onbekende completion code %d voor poort %d.", completion_code, port_id);
             break;
     }
-    printk(" PORTSC=%x \n",PORTSC(calculatedportid));
+    printk("\n");
+
+    session->devices[session->max_ports].physical_port_id = calculatedportid;
+
+    xhci_send_enable_slot(session,(USBDevice*) &session->devices[session->max_ports]);
+
+    session->max_ports++;
 }

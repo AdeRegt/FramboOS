@@ -173,6 +173,8 @@
 
 #define XHCI_CRCS_DEFAULT_CYCLE_STATE 1
 
+#define XHCI_TRB_ENABLE_SLOT_COMMAND_TRB_TYPE 9
+
 typedef struct{
     uint32_t ring_segment_base_address_low;
     uint32_t ring_segment_base_address_high;
@@ -182,12 +184,20 @@ typedef struct{
 }__attribute__((packed)) XHCIEventRingSegmentTable;
 
 typedef struct {
+    uint8_t physical_port_id;
+    void* pointer_to_requested_trb;
+}__attribute__((packed)) USBDevice;
+
+typedef struct {
     pci_class* pci_device;
     void* base_xhci_address;
     uint64_t* device_context_base_address_array;
     uint32_t* xhci_command_ring;
+    uint8_t command_ring_index;
     XHCIEventRingSegmentTable* xhci_event_ring_segment_table;
     uint32_t* xhci_event_ring;
+    USBDevice devices[5];
+    uint8_t max_ports;
 }__attribute__((packed)) XHCIControllerSession;
 
 typedef struct {
@@ -201,6 +211,17 @@ typedef struct {
     uint8_t TRBType:6;
     uint32_t reserved5:16;
 }__attribute__((packed)) PortStatusChangeEventTransferRequestBlock;
+
+typedef struct{
+     uint32_t rsvrd1;
+     uint32_t rsvrd2;
+     uint32_t rsvrd3;
+     uint8_t CycleBit:1;
+     uint16_t RsvdZ1:9;
+     uint16_t TRBType:6;
+     uint16_t SlotType:5;
+     uint16_t RsvdZ2:11;
+}__attribute__((packed)) EnableSlotCommandTRB;
 
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;
@@ -222,3 +243,5 @@ void xhci_setup_eventring(XHCIControllerSession *session);
 void xhci_set_max_ports(XHCIControllerSession *session);
 void event_watcher();
 void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusChangeEventTransferRequestBlock* psc_event);
+void xhci_send_enable_slot(XHCIControllerSession *session, USBDevice* device);
+void xhci_thingdong(XHCIControllerSession *session, USBDevice* device, void* trb);
