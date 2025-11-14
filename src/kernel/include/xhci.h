@@ -190,6 +190,18 @@ typedef struct {
     uint32_t* xhci_event_ring;
 }__attribute__((packed)) XHCIControllerSession;
 
+typedef struct {
+    uint32_t reserved1:24;
+    uint16_t PortID:8;
+    uint32_t reserved2;
+    uint32_t reserved3:24;
+    uint16_t CompletionCode:8;
+    uint8_t CycleBit:1;
+    uint16_t reserved4:9;
+    uint8_t TRBType:6;
+    uint32_t reserved5:16;
+}__attribute__((packed)) PortStatusChangeEventTransferRequestBlock;
+
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;
 
@@ -209,3 +221,4 @@ void xhci_setup_commandring(XHCIControllerSession *session);
 void xhci_setup_eventring(XHCIControllerSession *session);
 void xhci_set_max_ports(XHCIControllerSession *session);
 void event_watcher();
+void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusChangeEventTransferRequestBlock* psc_event);

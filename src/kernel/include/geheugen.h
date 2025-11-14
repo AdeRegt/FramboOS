@@ -159,3 +159,4 @@ void taskswitchstub();
 cpu_context_t* scheduler_tick(cpu_context_t* current);
 void memcpy(void* dest, const void* src, uint64_t n);
 void task_create(char* name, void (*func)());
+void timersleep(uint64_t secs);

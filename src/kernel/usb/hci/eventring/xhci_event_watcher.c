@@ -29,7 +29,8 @@ void event_watcher()
                             printk("XHCI Event Watcher: Command Completion Event gedetecteerd\n");
                             break;
                         case 34: // Port Status Change Event
-                            printk("XHCI Event Watcher: Port Status Change Event gedetecteerd op poort %d \n",(wingA >> 24) & 0xFF);
+                            PortStatusChangeEventTransferRequestBlock* psc_event = (PortStatusChangeEventTransferRequestBlock*)&event_ring[c*4];
+                            xhci_handle_port_change_event(session, psc_event);
                             break;
                         default:
                             printk("XHCI Event Watcher: Onbekend Event Type %d gedetecteerd\n", event_type);
