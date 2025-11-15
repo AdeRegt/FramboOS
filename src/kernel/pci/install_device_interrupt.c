@@ -6,10 +6,10 @@ void install_device_interrupt(pci_class* device, void (*handler)())
     {
         int msix_cap = pci_find_capability(device, PCI_CAP_ID_MSIX);
         if(msix_cap){
-            printk("Interrupt using MSIX at capability offset %x \n",msix_cap);
+            // printk("Interrupt using MSIX at capability offset %x \n",msix_cap);
             uint32_t msg_addr = get_pci_dword(device->bus, device->slot, device->function, msix_cap + 4);
             uint32_t msg_data = get_pci_dword(device->bus, device->slot, device->function, msix_cap + 8);
-            printk("MSIX old addr %x data %x \n",msg_addr,msg_data);
+            // printk("MSIX old addr %x data %x \n",msg_addr,msg_data);
         }
         int msi_cap = pci_find_capability(device, PCI_CAP_ID_MSI);
         if(msi_cap)
@@ -17,13 +17,7 @@ void install_device_interrupt(pci_class* device, void (*handler)())
             // printk("Interrupt using MSI at capability offset %x \n",msi_cap);
             uint16_t control = get_pci_dword(device->bus, device->slot, device->function, msi_cap + 2) & 0xFFFF;
             int is_64 = (control & (1 << 7)) != 0;
-            if(control & 1)
-            {
-                uint32_t msi_addr_old = get_pci_dword(device->bus, device->slot, device->function, msi_cap + 4);
-                uint16_t msi_vector_old = get_pci_dword(device->bus, device->slot, device->function, msi_cap + 8) & 0xFFFF;
-                printk("MSI was al ingeschakeld old %x vect %x \n",msi_addr_old,msi_vector_old);
-            }
-
+            
             // // Set MSI address (for x86, usually 0xFEE00000 | (APIC ID << 12))
             uint32_t msi_addr = 0xFEE00000;
             set_pci_dword(device->bus, device->slot, device->function, msi_cap , msi_addr);//+4?
@@ -39,7 +33,7 @@ void install_device_interrupt(pci_class* device, void (*handler)())
             control |= 1;
             set_pci_word(device->bus, device->slot, device->function, msi_cap + 2, control);
 
-            printk("MSI enabled for device at bus %d slot %d func %d\n", device->bus, device->slot, device->function);
+            // printk("MSI enabled for device at bus %d slot %d func %d\n", device->bus, device->slot, device->function);
             idt_set_entry(&idt[IDT_OFFSET + 0x25], handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
             idt_set_entry(&idt[0x25], handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
         }

@@ -23,7 +23,7 @@ void event_watcher()
                     uint8_t event_type = (wingD >> 10) & 0x3F;
                     switch(event_type){
                         case 32: // Transfer Event
-                            printk("XHCI Event Watcher: Transfer Event gedetecteerd\n");
+                            printk("XHCI EW: Transfer Event gedetecteerd\n");
                             break;
                         case 33: // Command Completion Event
                             CommandCompletionEventTRB* cc_event = (CommandCompletionEventTRB*)&event_ring[c*4];
@@ -34,7 +34,7 @@ void event_watcher()
                             xhci_handle_port_change_event(session, psc_event);
                             break;
                         default:
-                            printk("XHCI Event Watcher: Onbekend Event Type %d gedetecteerd\n", event_type);
+                            printk("XHCI EW: Onbekend Event Type %d gedetecteerd\n", event_type);
                             break;
                     }
                     // Markeer dit event als verwerkt door de cycle bit te toggelen

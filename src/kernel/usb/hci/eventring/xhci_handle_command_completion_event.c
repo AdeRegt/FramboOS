@@ -23,13 +23,14 @@ void xhci_handle_command_completion_event(XHCIControllerSession *session, Comman
     if(cc_event->CompletionCode == 1){ // Succes
         switch(old_trb_type){
             case 9: // Enable Slot Command TRB
-                printk("XHCI Command Completion Event: Enable Slot Command succesvol voltooid voor apparaat op poort %d, toegewezen Slot ID: %d\n", thisdevice->physical_port_id + 1, cc_event->SlotID);
+                printk("XHCI CCE: Enable Slot Command succesvol voltooid voor apparaat op poort %d, toegewezen Slot ID: %d\n", thisdevice->physical_port_id + 1, cc_event->SlotID);
+                xhci_send_set_address(session, thisdevice);
                 break;
             default:
-                printk("XHCI Command Completion Event: Onbekend TRB Type %d succesvol voltooid voor apparaat op poort %d\n", old_trb_type, thisdevice->physical_port_id + 1);
+                printk("XHCI CCE: Onbekend TRB Type %d succesvol voltooid voor apparaat op poort %d\n", old_trb_type, thisdevice->physical_port_id + 1);
                 break;
         }
     } else {
-        printk("XHCI Command Completion Event: Fout bij uitvoeren van command TRB Type %d voor apparaat op poort %d, Completion Code: %d\n", old_trb_type, thisdevice->physical_port_id + 1, cc_event->CompletionCode);
+        printk("XHCI CCE: Fout TRB Type %d voor apparaat op poort %d, Completion Code: %s\n", old_trb_type, thisdevice->physical_port_id + 1, xhci_get_resultcode_string(cc_event->CompletionCode));
     }
 }

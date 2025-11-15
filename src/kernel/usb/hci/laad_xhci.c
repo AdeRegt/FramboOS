@@ -9,7 +9,7 @@ void laad_xhci(pci_class* xhci_device)
     XHCIControllerSession* session = &xhci_session[xhci_session_count++];
     session->pci_device = xhci_device;
     session->base_xhci_address = (void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0);
-    printk("XHCI is beschikbaar op IRQ %d met BAR0 %x \n", xhci_device->interrupt, session->base_xhci_address);
+    // printk("XHCI is beschikbaar op IRQ %d met BAR0 %x \n", xhci_device->interrupt, session->base_xhci_address);
 
     //
     // Dit is de xhci interrupt handler installatie
@@ -68,5 +68,5 @@ void laad_xhci(pci_class* xhci_device)
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
     sleep(100);
 
-    printk("XHCI controller is klaar voor gebruik.\n");
+    // printk("XHCI controller is klaar voor gebruik.\n");
 }

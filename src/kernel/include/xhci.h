@@ -174,6 +174,7 @@
 #define XHCI_CRCS_DEFAULT_CYCLE_STATE 1
 
 #define XHCI_TRB_ENABLE_SLOT_COMMAND_TRB_TYPE 9
+#define XHCI_TRB_SET_ADDRESS_COMMAND_TRB_TYPE 11
 
 typedef struct{
     uint32_t ring_segment_base_address_low;
@@ -236,6 +237,91 @@ typedef struct{
     uint32_t SlotID:8;
 }__attribute__((packed)) CommandCompletionEventTRB;
 
+typedef struct{
+    uint32_t DataBufferPointerLo;
+    uint32_t DataBufferPointerHi;
+    uint32_t rsvrd2;
+    uint8_t CycleBit:1;
+    uint16_t RsvdZ1:8;
+    uint8_t BSR:1;
+    uint16_t TRBType:6;
+    uint8_t RsvdZ2;
+    uint8_t SlotID;
+}__attribute__((packed)) SetAddressCommandTRB;
+
+typedef struct{
+    uint32_t Dregisters;
+    uint32_t Aregisters;
+    uint32_t reservedA;
+    uint32_t reservedB;
+    uint32_t reservedC;
+    uint32_t reservedD;
+    uint32_t reservedE;
+    uint8_t ConfigurationValue;
+    uint8_t InterfaceNumber;
+    uint8_t AlternateSetting;
+    uint8_t reservedF;
+}__attribute__((packed)) XHCIInputControlContext;
+
+typedef struct{
+    uint32_t RouteString:20;
+    uint8_t Speed:4;
+    uint8_t reservedA:1;
+    uint8_t MTT:1;
+    uint8_t Hub:1;
+    uint8_t ContextEntries:5;
+
+    uint16_t MaxExitLatency;
+    uint8_t RootHubPortNumber;
+    uint8_t NumberOfPorts;
+
+    uint8_t ParentHubSlotID;
+    uint8_t ParentPortNumber;
+    uint8_t TTT:2;
+    uint8_t reservedB:4;
+    uint16_t InterrupterTarget:10;
+
+    uint8_t USBDeviceAddress;
+    uint32_t reservedC:19;
+    uint8_t SlotState:5;
+}__attribute__((packed)) XHCISlotContext;
+
+typedef struct {
+    uint8_t EndpointState:3;
+    uint8_t reservedA:5;
+    uint8_t Mult:2;
+    uint8_t MaxPStreams:5;
+    uint8_t LSA:1;
+    uint8_t Interval;
+    uint8_t MaxESITPayloadHigh;
+
+    uint8_t reservedB:1;
+    uint8_t Cerr:2;
+    uint8_t EPType:3;
+    uint8_t reservedC:1;
+    uint8_t HID:1;
+    uint8_t MaxBurstSize;
+    uint16_t MaxPacketSize;
+
+    uint8_t DequeueCycleState:1;
+    uint8_t reservedD:3;
+    uint32_t TRDequeuePointerLow:28;
+    uint32_t TRDequeuePointerHigh;
+
+    uint16_t AverageTRBLength;
+    uint16_t MaxESITPayloadLow;
+
+    uint8_t padding[0xC];
+}__attribute__((packed)) XHCIEndpointContext;
+
+typedef struct{
+    XHCIInputControlContext icc;
+    XHCISlotContext slotcontext;
+    uint8_t paddingB[0x10];
+    XHCIEndpointContext epc;
+    XHCIEndpointContext epx[15];
+}__attribute__((packed)) XHCIInputContextBuffer;
+
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;
 
@@ -259,3 +345,6 @@ void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusCha
 void xhci_send_enable_slot(XHCIControllerSession *session, USBDevice* device);
 void xhci_thingdong(XHCIControllerSession *session, USBDevice* device, void* trb);
 void xhci_handle_command_completion_event(XHCIControllerSession *session, CommandCompletionEventTRB* cc_event);
+void* xhci_alloc_command_trb(XHCIControllerSession *session);
+void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device);
+char* xhci_get_resultcode_string(uint8_t code);
