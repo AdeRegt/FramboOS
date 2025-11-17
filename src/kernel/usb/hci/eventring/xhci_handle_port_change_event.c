@@ -12,7 +12,7 @@ void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusCha
         PORTSC(calculatedportid) |= 0b00000000000000000000000000010000; // Poort resetten
         return;
     }
-    PORTSC(calculatedportid) |= 0x200000;
+    // PORTSC(calculatedportid) |= 0x200000;
 
     switch(completion_code) {
         case 1: // Success

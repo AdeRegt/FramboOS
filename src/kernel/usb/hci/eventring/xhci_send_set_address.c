@@ -45,6 +45,9 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
     
 	session->device_context_base_address_array[device->slot_id] = ((uint64_t)(infostructures+64));
 	
+	trb->DataBufferPointerLo = (uint32_t)(uint64_t)(infostructures);
+	trb->DataBufferPointerHi = (uint32_t)0;
+	
     xhci_thingdong(session, device, (void*)trb);
 
 }
