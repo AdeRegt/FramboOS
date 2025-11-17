@@ -185,24 +185,6 @@ typedef struct{
 }__attribute__((packed)) XHCIEventRingSegmentTable;
 
 typedef struct {
-    uint8_t physical_port_id;
-    void* pointer_to_requested_trb;
-    uint8_t slot_id;
-}__attribute__((packed)) USBDevice;
-
-typedef struct {
-    pci_class* pci_device;
-    void* base_xhci_address;
-    uint64_t* device_context_base_address_array;
-    uint32_t* xhci_command_ring;
-    uint8_t command_ring_index;
-    XHCIEventRingSegmentTable* xhci_event_ring_segment_table;
-    uint32_t* xhci_event_ring;
-    USBDevice devices[5];
-    uint8_t max_ports;
-}__attribute__((packed)) XHCIControllerSession;
-
-typedef struct {
     uint32_t reserved1:24;
     uint16_t PortID:8;
     uint32_t reserved2;
@@ -321,6 +303,27 @@ typedef struct{
     XHCIEndpointContext epc;
     XHCIEndpointContext epx[15];
 }__attribute__((packed)) XHCIInputContextBuffer;
+
+typedef struct {
+    uint8_t physical_port_id;
+    void* pointer_to_requested_trb;
+    uint8_t slot_id;
+    XHCIInputContextBuffer *infostructures;
+    void* control_endpoint_ring;
+    int control_endpoint_ring_index;
+}__attribute__((packed)) USBDevice;
+
+typedef struct {
+    pci_class* pci_device;
+    void* base_xhci_address;
+    uint64_t* device_context_base_address_array;
+    uint32_t* xhci_command_ring;
+    uint8_t command_ring_index;
+    XHCIEventRingSegmentTable* xhci_event_ring_segment_table;
+    uint32_t* xhci_event_ring;
+    USBDevice devices[5];
+    uint8_t max_ports;
+}__attribute__((packed)) XHCIControllerSession;
 
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;

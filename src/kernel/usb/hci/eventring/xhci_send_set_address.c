@@ -47,6 +47,10 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	
 	trb->DataBufferPointerLo = (uint32_t)(uint64_t)(infostructures);
 	trb->DataBufferPointerHi = (uint32_t)0;
+
+	device->infostructures = infostructures;
+	device->control_endpoint_ring = localring;
+	device->control_endpoint_ring_index = 0;
 	
     xhci_thingdong(session, device, (void*)trb);
 
