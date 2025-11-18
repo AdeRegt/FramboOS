@@ -210,6 +210,18 @@ typedef struct{
 typedef struct{
     uint32_t DataBufferPointerLo;
     uint32_t DataBufferPointerHi;
+    uint32_t TRBTransferLength:24;
+    uint16_t CompletionCode:8;
+    uint8_t C:1;
+    uint16_t reserved3:9;
+    uint8_t TRBType:6;
+    uint32_t VFID:8;
+    uint32_t SlotID:8;
+}__attribute__((packed)) TransferEventTRB;
+
+typedef struct{
+    uint32_t DataBufferPointerLo;
+    uint32_t DataBufferPointerHi;
     uint32_t CommandCompletionParameter:24;
     uint16_t CompletionCode:8;
     uint8_t C:1;
@@ -304,6 +316,84 @@ typedef struct{
     XHCIEndpointContext epx[15];
 }__attribute__((packed)) XHCIInputContextBuffer;
 
+typedef struct __attribute__ ((packed)) {
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint16_t bcdUSB;
+  uint8_t bDeviceClass;
+  uint8_t bDeviceSubClass;
+  uint8_t bDeviceProtocol;
+  uint8_t bMaxPacketSize0;
+  uint16_t idVendor;
+  uint16_t idProduct;
+  uint16_t bcdDevice;
+  uint8_t iManufacturer;
+  uint8_t iProduct;
+  uint8_t iSerialNumber;
+  uint8_t bNumConfigurations;
+}USBStandardDeviceDescriptor;
+
+
+typedef struct __attribute__ ((packed))  {
+    uint8_t bRequestType;
+    uint8_t bRequest;
+    uint16_t wValue;
+    uint16_t wIndex;
+    uint16_t wLength;
+} USBCommand;
+
+
+typedef struct{
+    USBCommand usbcmd;
+    uint32_t TRBTransferLength:17;
+    uint16_t Reserved1:5;
+    uint16_t InterrupterTarget:10;
+    uint16_t Cyclebit:1;
+    uint16_t Reserved2:4;
+    uint16_t InterruptOnCompletion:1;
+    uint16_t ImmediateData:1;
+    uint16_t Reserved3:3;
+    uint16_t TRBType:6;
+    uint16_t TRT:2;
+    uint16_t RsvdZ2:14;
+}__attribute__((packed))SetupStageTRB;
+
+typedef struct{
+    uint32_t Address1;
+    uint32_t Address2;
+    uint32_t TRBTransferLength:17;
+    uint16_t TDSize:5;
+    uint16_t InterrupterTarget:10;
+    uint16_t Cyclebit:1;
+    uint16_t EvaluateNextTRB:1;
+    uint16_t InterruptonShortPacket:1;
+    uint16_t NoSnoop:1;
+    uint16_t Chainbit:1;
+    uint16_t InterruptOnCompletion:1;
+    uint16_t ImmediateData:1;
+    uint16_t Reserved3:3;
+    uint16_t TRBType:6;
+    uint16_t Direction:1;
+    uint16_t RsvdZ2:15;
+}__attribute__((packed))DataStageTRB;
+
+typedef struct{
+    uint32_t Reserved1;
+    uint32_t Reserved2;
+    uint32_t Reserved3:17;
+    uint16_t Reserved4:5;
+    uint16_t InterrupterTarget:10;
+    uint16_t Cyclebit:1;
+    uint16_t EvaluateNextTRB:1;
+    uint16_t Reserved5:2;
+    uint16_t Chainbit:1;
+    uint16_t InterruptOnCompletion:1;
+    uint16_t Reserved6:4;
+    uint16_t TRBType:6;
+    uint16_t Direction:1;
+    uint16_t RsvdZ2:15;
+}__attribute__((packed))StatusStageTRB;
+
 typedef struct {
     uint8_t physical_port_id;
     void* pointer_to_requested_trb;
@@ -311,6 +401,7 @@ typedef struct {
     XHCIInputContextBuffer *infostructures;
     void* control_endpoint_ring;
     int control_endpoint_ring_index;
+    USBStandardDeviceDescriptor* devdesc;
 }__attribute__((packed)) USBDevice;
 
 typedef struct {
@@ -346,8 +437,11 @@ void xhci_set_max_ports(XHCIControllerSession *session);
 void event_watcher();
 void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusChangeEventTransferRequestBlock* psc_event);
 void xhci_send_enable_slot(XHCIControllerSession *session, USBDevice* device);
-void xhci_thingdong(XHCIControllerSession *session, USBDevice* device, void* trb);
+void xhci_thingdong(XHCIControllerSession *session, USBDevice* device, void* trb, int doorbell_index, int doorbell_value);
 void xhci_handle_command_completion_event(XHCIControllerSession *session, CommandCompletionEventTRB* cc_event);
 void* xhci_alloc_command_trb(XHCIControllerSession *session);
 void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device);
 char* xhci_get_resultcode_string(uint8_t code);
+void xhci_send_request_device_descriptor(XHCIControllerSession *session, USBDevice* device);
+void* xhci_alloc_local_trb(XHCIControllerSession *session, USBDevice* device);
+void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB* transfer_event);

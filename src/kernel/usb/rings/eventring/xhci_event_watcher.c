@@ -23,7 +23,8 @@ void event_watcher()
                     uint8_t event_type = (wingD >> 10) & 0x3F;
                     switch(event_type){
                         case 32: // Transfer Event
-                            printk("XHCI EW: Transfer Event gedetecteerd\n");
+                            TransferEventTRB* te_event = (TransferEventTRB*)&event_ring[c*4];
+                            xhci_handle_transfer_event(session, te_event);
                             break;
                         case 33: // Command Completion Event
                             CommandCompletionEventTRB* cc_event = (CommandCompletionEventTRB*)&event_ring[c*4];

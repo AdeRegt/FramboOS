@@ -26,6 +26,10 @@ void xhci_handle_command_completion_event(XHCIControllerSession *session, Comman
                 printk("XHCI CCE: Enable Slot Command succesvol voltooid voor apparaat op poort %d, toegewezen Slot ID: %d\n", thisdevice->physical_port_id + 1, cc_event->SlotID);
                 xhci_send_set_address(session, thisdevice);
                 break;
+            case 11: // Address Device Command TRB
+                printk("XHCI CCE: Address Device Command succesvol voltooid voor apparaat op port %d .\n", thisdevice->physical_port_id + 1);
+                xhci_send_request_device_descriptor(session, thisdevice);
+                break;
             default:
                 printk("XHCI CCE: Onbekend TRB Type %d succesvol voltooid voor apparaat op poort %d\n", old_trb_type, thisdevice->physical_port_id + 1);
                 break;

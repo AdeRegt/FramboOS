@@ -8,6 +8,6 @@ void xhci_send_enable_slot(XHCIControllerSession *session, USBDevice* device)
     enable_slot_trb->TRBType = XHCI_TRB_ENABLE_SLOT_COMMAND_TRB_TYPE; // Enable Slot Command TRB
     enable_slot_trb->SlotType = 0; // Device Slot
     
-    xhci_thingdong(session, device, (void*)enable_slot_trb);
+    xhci_thingdong(session, device, (void*)enable_slot_trb, 0, 0);
 
 }

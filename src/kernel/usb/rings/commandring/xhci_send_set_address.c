@@ -52,6 +52,6 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	device->control_endpoint_ring = localring;
 	device->control_endpoint_ring_index = 0;
 	
-    xhci_thingdong(session, device, (void*)trb);
+    xhci_thingdong(session, device, (void*)trb, 0, 0);
 
 }
