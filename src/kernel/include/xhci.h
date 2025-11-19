@@ -489,3 +489,4 @@ void xhci_send_request_device_descriptor(XHCIControllerSession *session, USBDevi
 void* xhci_alloc_local_trb(XHCIControllerSession *session, USBDevice* device);
 void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB* transfer_event);
 void xhci_send_request_configuration_descriptor(XHCIControllerSession *session, USBDevice* device);
+char* xhci_class_to_string(uint8_t class_code);
