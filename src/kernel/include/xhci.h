@@ -175,6 +175,7 @@
 
 #define XHCI_TRB_ENABLE_SLOT_COMMAND_TRB_TYPE 9
 #define XHCI_TRB_SET_ADDRESS_COMMAND_TRB_TYPE 11
+#define XHCI_TRB_CONFIGURE_ENDPOINT_COMMAND_TRB_TYPE 12
 
 typedef struct{
     uint32_t ring_segment_base_address_low;
@@ -435,6 +436,18 @@ typedef struct __attribute__ ((packed)) {
     usb_endpoint endpoint2;
 }USBStandardConfigurationDescriptor;
 
+typedef struct{
+    uint32_t DataBufferPointerLo;
+    uint32_t DataBufferPointerHi;
+    uint32_t rsvrd2;
+    uint8_t CycleBit:1;
+    uint16_t RsvdZ1:8;
+    uint8_t Deconfigure:1;
+    uint16_t TRBType:6;
+    uint8_t RsvdZ2;
+    uint8_t SlotID;
+}__attribute__((packed)) ConfigureEndpointCommandTRB;
+
 typedef struct {
     uint8_t physical_port_id;
     void* pointer_to_requested_trb;
@@ -490,3 +503,4 @@ void* xhci_alloc_local_trb(XHCIControllerSession *session, USBDevice* device);
 void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB* transfer_event);
 void xhci_send_request_configuration_descriptor(XHCIControllerSession *session, USBDevice* device);
 char* xhci_class_to_string(uint8_t class_code);
+void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device);

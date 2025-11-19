@@ -11,7 +11,7 @@ void xhci_send_request_configuration_descriptor(XHCIControllerSession *session, 
     setup->usbcmd.bRequest = 6; // GET_DESCRIPTOR
     setup->usbcmd.wValue = 0x0200; // Descriptor Type (Configuration) en Descriptor Index (0)
     setup->usbcmd.wIndex = 0; // Language ID (0 voor Configuration Descriptor)
-    setup->usbcmd.wLength = sizeof(USBStandardConfigurationDescriptor); // Lengte van de Configuration Descriptor
+    setup->usbcmd.wLength = 0x1000; // Lengte van de Configuration Descriptor
     setup->TRBTransferLength = 8;
     setup->ImmediateData = 1;
     setup->TRT = 3; // Setup Stage
@@ -22,7 +22,7 @@ void xhci_send_request_configuration_descriptor(XHCIControllerSession *session, 
     DataStageTRB* data = (DataStageTRB*) xhci_alloc_local_trb(session, device);
     data->Address1 = (uint32_t)( (uint64_t) configdesc ); // Laag 32 bits van het bufferadres
     data->Address2 = (uint32_t)( ( (uint64_t) configdesc ) >> 32 ); // Hoog 32 bits van het bufferadres
-    data->TRBTransferLength = sizeof(USBStandardConfigurationDescriptor);
+    data->TRBTransferLength = 0x1000;
     data->Direction = 1; // Device to Host
     data->Cyclebit = 1;
     // data->InterruptOnCompletion = 1;
