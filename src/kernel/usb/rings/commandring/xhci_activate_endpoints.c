@@ -15,38 +15,28 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
         return;
     }
 
-    uint64_t offsetdinges = ((uint64_t)&device->configdesc->configdesc) + device->configdesc->configdesc.bLength + device->configdesc->interfacdesc.bLength;
-    usb_endpoint endpoint1 = ((usb_endpoint*)offsetdinges)[0];
-    offsetdinges += 13;
-    usb_endpoint endpoint2 = ((usb_endpoint*)offsetdinges)[0];
-    
-    usb_endpoint* in_endpoint = NULL;
-    usb_endpoint* out_endpoint = NULL;
-    if( (endpoint1.bEndpointAddress & 0x80) != 0 ){
-        in_endpoint = &endpoint1;
-        out_endpoint = &endpoint2;
-    }else{
-        in_endpoint = &endpoint2;
-        out_endpoint = &endpoint1;
-    }
-
     void* ring_in = alloc_page();
     void* ring_out = alloc_page();
 
-    uint8_t index1 = (( in_endpoint->bEndpointAddress & 0x0F ) * 2)+1;
-    uint8_t index2 = (out_endpoint->bEndpointAddress & 0x0F)*2;
+    device->infostructures->icc.Aregisters = 0b1100;
+	// device->infostructures->slotcontext.RootHubPortNumber = device->physical_port_id + 1;
+	device->infostructures->slotcontext.ContextEntries = 5;
+	// device->infostructures->slotcontext.Speed = portspeed;
+	device->infostructures->epx[0].LSA = 0;
+	device->infostructures->epx[0].EPType = 6;
+	device->infostructures->epx[0].Cerr = 3;
+	device->infostructures->epx[0].MaxPacketSize = 512;
+	device->infostructures->epx[0].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring_in)>>4 ;
+	device->infostructures->epx[0].TRDequeuePointerHigh = 0;
+	device->infostructures->epx[0].DequeueCycleState = 1;
 
-    device->infostructures->epx[index1-1].EPType = 3;
-    device->infostructures->epx[index1-1].MaxPacketSize = 512*2;
-    device->infostructures->epx[index1-1].Cerr = 3;
-    device->infostructures->epx[index1-1].MaxESITPayloadLow = ((uint32_t)(uint64_t) ring_in) | 1;
-
-    device->infostructures->epx[index2-1].EPType = 2;
-    device->infostructures->epx[index2-1].MaxPacketSize = 512*2;
-    device->infostructures->epx[index2-1].Cerr = 3;
-    device->infostructures->epx[index2-1].MaxESITPayloadLow = ((uint32_t)(uint64_t) ring_out) | 1;
-
-    device->infostructures->slotcontext.ContextEntries = 4;
+	device->infostructures->epx[1].LSA = 0;
+	device->infostructures->epx[1].EPType = 6;
+	device->infostructures->epx[1].Cerr = 3;
+	device->infostructures->epx[1].MaxPacketSize = 512;
+	device->infostructures->epx[1].TRDequeuePointerLow = ((uint32_t) (uint64_t) ring_out)>>4 ;
+	device->infostructures->epx[1].TRDequeuePointerHigh = 0;
+	device->infostructures->epx[1].DequeueCycleState = 1;
     
     ConfigureEndpointCommandTRB* trb = (ConfigureEndpointCommandTRB*) xhci_alloc_command_trb(session);
     trb->CycleBit = XHCI_CRCS_DEFAULT_CYCLE_STATE; // Cycle Bit instellen

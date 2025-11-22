@@ -22,13 +22,18 @@ void xhci_handle_command_completion_event(XHCIControllerSession *session, Comman
     thisdevice->slot_id = cc_event->SlotID;
     if(cc_event->CompletionCode == 1){ // Succes
         switch(old_trb_type){
-            case 9: // Enable Slot Command TRB
+            case XHCI_TRB_ENABLE_SLOT_COMMAND_TRB_TYPE: // Enable Slot Command TRB
                 printk("XHCI CCE: Enable Slot Command succesvol voltooid voor apparaat op poort %d, toegewezen Slot ID: %d\n", thisdevice->physical_port_id + 1, cc_event->SlotID);
                 xhci_send_set_address(session, thisdevice);
                 break;
-            case 11: // Address Device Command TRB
+            case XHCI_TRB_SET_ADDRESS_COMMAND_TRB_TYPE: // Address Device Command TRB
                 printk("XHCI CCE: Address Device Command succesvol voltooid voor apparaat op port %d .\n", thisdevice->physical_port_id + 1);
                 xhci_send_request_device_descriptor(session, thisdevice);
+                break;
+            case XHCI_TRB_CONFIGURE_ENDPOINT_COMMAND_TRB_TYPE: // Configure Endpoint Command TRB
+                printk("XHCI CCE: Configure Endpoint Command succesvol voltooid voor apparaat op poort %d .\n", thisdevice->physical_port_id + 1);
+                // Apparaten met meerdere endpoints worden hier verder geconfigureerd
+                
                 break;
             default:
                 printk("XHCI CCE: Onbekend TRB Type %d succesvol voltooid voor apparaat op poort %d\n", old_trb_type, thisdevice->physical_port_id + 1);
