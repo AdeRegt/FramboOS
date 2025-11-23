@@ -35,13 +35,13 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	infostructures->slotcontext.RootHubPortNumber = device->physical_port_id + 1;
 	infostructures->slotcontext.ContextEntries = 1;
 	infostructures->slotcontext.Speed = portspeed;
-	infostructures->epc.LSA = 0;
-	infostructures->epc.EPType = 4;
-	infostructures->epc.Cerr = 3;
-	infostructures->epc.MaxPacketSize = calculatedportspeed;
-	infostructures->epc.TRDequeuePointerLow = ((uint32_t) (uint64_t) localring)>>4 ;
-	infostructures->epc.TRDequeuePointerHigh = 0;
-	infostructures->epc.DequeueCycleState = 1;
+	infostructures->ep0.LSA = 0;
+	infostructures->ep0.EPType = 4;
+	infostructures->ep0.Cerr = 3;
+	infostructures->ep0.MaxPacketSize = calculatedportspeed;
+	infostructures->ep0.TRDequeuePointerLow = ((uint32_t) (uint64_t) localring)>>4 ;
+	infostructures->ep0.TRDequeuePointerHigh = 0;
+	infostructures->ep0.DequeueCycleState = 1;
     
 	session->device_context_base_address_array[device->slot_id] = ((uint64_t)(infostructures+64));
 	

@@ -316,8 +316,9 @@ typedef struct{
     XHCIInputControlContext icc;
     XHCISlotContext slotcontext;
     uint8_t paddingB[0x10];
-    XHCIEndpointContext epc;
-    XHCIEndpointContext epx[15];
+    XHCIEndpointContext ep0;
+    XHCIEndpointContext ep1;
+    XHCIEndpointContext ep2;
 }__attribute__((packed)) XHCIInputContextBuffer;
 
 typedef struct __attribute__ ((packed)) {
@@ -451,6 +452,26 @@ typedef struct{
     uint8_t SlotID;
 }__attribute__((packed)) ConfigureEndpointCommandTRB;
 
+typedef struct{
+    uint32_t DataBufferPointerLo;
+    uint32_t DataBufferPointerHi;
+    uint32_t TRBTransferLength:17;
+    uint16_t TDSize:5;
+    uint16_t InterrupterTarget:10;
+    uint16_t Cyclebit:1;
+    uint16_t EvaluateNextTRB:1;
+    uint16_t InterruptonShortPacket:1;
+    uint16_t NoSnoop:1;
+    uint16_t Chainbit:1;
+    uint16_t InterruptOnCompletion:1;
+    uint16_t ImmediateData:1;
+    uint16_t RsvdZ1:2;
+    uint16_t BlockEventInterrupt:1;
+    uint16_t TRBType:6;
+    uint16_t RsvdZ2:16;
+    // uint8_t EndpointAddress;       // Endpoint address (e.g., 0x81 for Bulk IN, 0x02 for Bulk OUT)
+}__attribute__((packed))TransferTRB;
+
 typedef struct {
     void* ring_trbs;
     uint32_t ring_size;
@@ -521,3 +542,6 @@ void *xhci_alloc_trb_ring(USBRing *ring);
 void xhci_ring_trb_ring(XHCIControllerSession *session, USBDevice* device, USBRing *ring, void* trb);
 void xhci_send_set_config(XHCIControllerSession *session, USBDevice* device, int config_id);
 void xhci_device_event_router(XHCIControllerSession *session, USBDevice* device);
+void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
+void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring);
+USBRing* xhci_set_context(XHCIEndpointContext* context, uint8_t ep_type, uint16_t packetsize);
