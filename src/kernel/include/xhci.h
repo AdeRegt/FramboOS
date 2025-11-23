@@ -449,11 +449,23 @@ typedef struct{
 }__attribute__((packed)) ConfigureEndpointCommandTRB;
 
 typedef struct {
+    void* ring_trbs;
+    uint32_t ring_size;
+    uint32_t enqueue_index;
+    uint8_t slot_id;
+    uint8_t endpoint_id;
+    uint8_t cycle_state;
+}__attribute__((packed)) USBRing;
+
+typedef struct {
     uint8_t physical_port_id;
     void* pointer_to_requested_trb;
     uint8_t slot_id;
     XHCIInputContextBuffer *infostructures;
     void* control_endpoint_ring;
+    USBRing* commandring;
+    USBRing* ep_ring_in;
+    USBRing* ep_ring_out;
     int control_endpoint_ring_index;
     USBStandardDeviceDescriptor* devdesc;
     int initialisation_status;
@@ -504,3 +516,4 @@ void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB
 void xhci_send_request_configuration_descriptor(XHCIControllerSession *session, USBDevice* device);
 char* xhci_class_to_string(uint8_t class_code);
 void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device);
+void *xhci_alloc_trb_ring(USBRing *ring);
