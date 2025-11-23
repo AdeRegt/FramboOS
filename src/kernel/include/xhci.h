@@ -319,6 +319,8 @@ typedef struct{
     XHCIEndpointContext ep0;
     XHCIEndpointContext ep1;
     XHCIEndpointContext ep2;
+    XHCIEndpointContext ep3;
+    XHCIEndpointContext ep4;
 }__attribute__((packed)) XHCIInputContextBuffer;
 
 typedef struct __attribute__ ((packed)) {
