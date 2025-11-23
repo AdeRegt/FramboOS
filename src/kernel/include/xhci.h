@@ -173,6 +173,9 @@
 
 #define XHCI_CRCS_DEFAULT_CYCLE_STATE 1
 
+#define XHCI_TRB_SETUP_TRB_TYPE 2
+#define XHCI_TRB_DATA_TRB_TYPE 3
+#define XHCI_TRB_STATUS_TRB_TYPE 4
 #define XHCI_TRB_ENABLE_SLOT_COMMAND_TRB_TYPE 9
 #define XHCI_TRB_SET_ADDRESS_COMMAND_TRB_TYPE 11
 #define XHCI_TRB_CONFIGURE_ENDPOINT_COMMAND_TRB_TYPE 12
@@ -462,11 +465,9 @@ typedef struct {
     void* pointer_to_requested_trb;
     uint8_t slot_id;
     XHCIInputContextBuffer *infostructures;
-    void* control_endpoint_ring;
     USBRing* commandring;
     USBRing* ep_ring_in;
     USBRing* ep_ring_out;
-    int control_endpoint_ring_index;
     USBStandardDeviceDescriptor* devdesc;
     int initialisation_status;
     USBStandardConfigurationDescriptor* configdesc;
@@ -517,3 +518,6 @@ void xhci_send_request_configuration_descriptor(XHCIControllerSession *session, 
 char* xhci_class_to_string(uint8_t class_code);
 void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device);
 void *xhci_alloc_trb_ring(USBRing *ring);
+void xhci_ring_trb_ring(XHCIControllerSession *session, USBDevice* device, USBRing *ring, void* trb);
+void xhci_send_set_config(XHCIControllerSession *session, USBDevice* device, int config_id);
+void xhci_device_event_router(XHCIControllerSession *session, USBDevice* device);

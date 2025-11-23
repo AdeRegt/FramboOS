@@ -49,15 +49,13 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	trb->DataBufferPointerHi = (uint32_t)0;
 
 	device->infostructures = infostructures;
-	device->control_endpoint_ring = localring;
-	device->control_endpoint_ring_index = 0;
 
 	USBRing* control_ring = (USBRing*) alloc_page();
 	control_ring->ring_trbs = localring;
 	control_ring->ring_size = XHCI_COMMAND_RING_SIZE;
 	control_ring->enqueue_index = 0;
 	control_ring->slot_id = device->slot_id;
-	control_ring->endpoint_id = 0;
+	control_ring->endpoint_id = 1;
 	control_ring->cycle_state = XHCI_CRCS_DEFAULT_CYCLE_STATE;
 	device->commandring = control_ring;
 	

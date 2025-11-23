@@ -18,7 +18,7 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
     void* ring_in = alloc_page();
     void* ring_out = alloc_page();
 
-    device->infostructures->icc.Aregisters = 0b1100;
+    device->infostructures->icc.Aregisters = 0b1111;//0b1100
 	// device->infostructures->slotcontext.RootHubPortNumber = device->physical_port_id + 1;
 	device->infostructures->slotcontext.ContextEntries = 5;
 	// device->infostructures->slotcontext.Speed = portspeed;
@@ -50,7 +50,7 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
 	in_ring->ring_size = XHCI_COMMAND_RING_SIZE;
 	in_ring->enqueue_index = 0;
 	in_ring->slot_id = device->slot_id;
-	in_ring->endpoint_id = 1;
+	in_ring->endpoint_id = 2;
 	in_ring->cycle_state = XHCI_CRCS_DEFAULT_CYCLE_STATE;
 	device->ep_ring_in = in_ring;
 
@@ -59,7 +59,7 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
 	out_ring->ring_size = XHCI_COMMAND_RING_SIZE;
 	out_ring->enqueue_index = 0;
 	out_ring->slot_id = device->slot_id;
-	out_ring->endpoint_id = 2;
+	out_ring->endpoint_id = 3;
 	out_ring->cycle_state = XHCI_CRCS_DEFAULT_CYCLE_STATE;
 	device->ep_ring_out = out_ring;
 
