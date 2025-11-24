@@ -180,6 +180,21 @@
 #define XHCI_TRB_SET_ADDRESS_COMMAND_TRB_TYPE 11
 #define XHCI_TRB_CONFIGURE_ENDPOINT_COMMAND_TRB_TYPE 12
 
+#define XHCI_SETUP_PACKAGE_GET_STATUS 0
+#define XHCI_SETUP_PACKAGE_CLEAR_FEATURE 1
+#define XHCI_SETUP_PACKAGE_SET_FEATURE 3
+#define XHCI_SETUP_PACKAGE_SET_ADDRESS 5
+#define XHCI_SETUP_PACKAGE_GET_DESCRIPTOR 6
+#define XHCI_SETUP_PACKAGE_SET_DESCRIPTOR 7
+#define XHCI_SETUP_PACKAGE_GET_CONFIGURATION 8
+#define XHCI_SETUP_PACKAGE_SET_CONFIGURATION 9
+#define XHCI_SETUP_PACKAGE_GET_INTERFACE 10
+#define XHCI_SETUP_PACKAGE_SET_INTERFACE 11
+#define XHCI_SETUP_PACKAGE_SYNCH_FRAME 12
+#define XHCI_SETUP_PACKAGE_SET_SEL 48
+#define XHCI_SETUP_PACKAGE_SET_ISOCH_DELAY 49
+
+
 typedef struct{
     uint32_t ring_segment_base_address_low;
     uint32_t ring_segment_base_address_high;
@@ -547,3 +562,4 @@ void xhci_device_event_router(XHCIControllerSession *session, USBDevice* device)
 void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
 void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring);
 USBRing* xhci_set_context(XHCIEndpointContext* context, uint8_t ep_type, uint16_t packetsize);
+void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);

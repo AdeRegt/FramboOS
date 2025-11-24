@@ -35,6 +35,9 @@ void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB
                     xhci_activate_endpoints(session, thisdevice);
                 }else if(thisdevice->initialisation_status==3){
                     printk("XHCI TE: Apparaat op poort %d heeft de configuratie ingesteld\n", thisdevice->physical_port_id + 1);
+                    xhci_send_set_interface(session,thisdevice,thisdevice->configdesc->interfacdesc.bInterfaceNumber);
+                }else if(thisdevice->initialisation_status==4){
+                    printk("XHCI TE: Apparaat op poort %d heeft de interface ingesteld\n", thisdevice->physical_port_id + 1);
                     xhci_device_event_router(session, thisdevice);
                 }else{
                     printk("XHCI TE: Transfer succesvol voltooid voor apparaat op poort %d, Slot ID: %d\n", thisdevice->physical_port_id + 1, thisdevice->slot_id);

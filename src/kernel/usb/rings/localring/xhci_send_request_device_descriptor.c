@@ -8,7 +8,7 @@ void xhci_send_request_device_descriptor(XHCIControllerSession *session, USBDevi
     // Stuur een Request Device Descriptor Command TRB
     SetupStageTRB* setup = (SetupStageTRB*) xhci_alloc_local_trb(session, device);
     setup->usbcmd.bRequestType = 0x80; // Device to Host, Standard, Device
-    setup->usbcmd.bRequest = 6; // GET_DESCRIPTOR
+    setup->usbcmd.bRequest = XHCI_SETUP_PACKAGE_GET_DESCRIPTOR; // GET_DESCRIPTOR
     setup->usbcmd.wValue = 0x0100; // Descriptor Type (Device) en Descriptor Index (0)
     setup->usbcmd.wIndex = 0; // Language ID (0 voor Device Descriptor)
     setup->usbcmd.wLength = sizeof(USBStandardDeviceDescriptor); // Lengte van de Device Descriptor

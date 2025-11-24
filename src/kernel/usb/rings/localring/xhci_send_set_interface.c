@@ -1,13 +1,13 @@
 #include "xhci.h"
 
-void xhci_send_set_config(XHCIControllerSession *session, USBDevice* device, int config_id)
+void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id)
 {
-    device->initialisation_status = 3;
+    device->initialisation_status = 4;
     // Stuur een Request Configuration Descriptor Command TRB
     SetupStageTRB* setup = (SetupStageTRB*) xhci_alloc_local_trb(session, device);
     setup->usbcmd.bRequestType = 0; // Device to Host, Standard, Device
-    setup->usbcmd.bRequest = XHCI_SETUP_PACKAGE_SET_CONFIGURATION; // GET_DESCRIPTOR
-    setup->usbcmd.wValue = config_id; // Descriptor Type (Configuration) en Descriptor Index (0)
+    setup->usbcmd.bRequest = XHCI_SETUP_PACKAGE_SET_INTERFACE; // GET_DESCRIPTOR
+    setup->usbcmd.wValue = interface_id; // Descriptor Type (Configuration) en Descriptor Index (0)
     setup->usbcmd.wIndex = 0; // Language ID (0 voor Configuration Descriptor)
     setup->usbcmd.wLength = 0; // Lengte van de Configuration Descriptor
     setup->TRBTransferLength = 8;
