@@ -43,7 +43,7 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	infostructures->ep0.TRDequeuePointerHigh = 0;
 	infostructures->ep0.DequeueCycleState = 1;
     
-	session->device_context_base_address_array[device->slot_id] = ((uint64_t)(infostructures+64));
+	session->device_context_base_address_array[device->slot_id] = ((uint64_t)alloc_page());
 	
 	trb->DataBufferPointerLo = (uint32_t)(uint64_t)(infostructures);
 	trb->DataBufferPointerHi = (uint32_t)0;

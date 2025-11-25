@@ -194,6 +194,8 @@
 #define XHCI_SETUP_PACKAGE_SET_SEL 48
 #define XHCI_SETUP_PACKAGE_SET_ISOCH_DELAY 49
 
+#define USB_DIR_IN 0x80
+
 
 typedef struct{
     uint32_t ring_segment_base_address_low;
@@ -422,7 +424,7 @@ typedef struct __attribute__ ((packed)) {
 	unsigned char bEndpointAddress;
 	unsigned char bmAttributes;
 	unsigned short wMaxPacketSize;
-  unsigned char udef;
+    unsigned char udef[7];
 }usb_endpoint;
 
 typedef struct __attribute__ ((packed)){
@@ -561,5 +563,5 @@ void xhci_send_set_config(XHCIControllerSession *session, USBDevice* device, int
 void xhci_device_event_router(XHCIControllerSession *session, USBDevice* device);
 void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
 void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring);
-USBRing* xhci_set_context(XHCIEndpointContext* context, uint8_t ep_type, uint16_t packetsize);
+void xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint);
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
