@@ -25,20 +25,23 @@ void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB
                 if(thisdevice->initialisation_status==1){
                     if(thisdevice->devdesc->bDeviceClass!=0){
                         printk("XHCI TE: Apparaat op poort %d heeft Device Class %s\n", thisdevice->physical_port_id + 1, xhci_class_to_string(thisdevice->devdesc->bDeviceClass));
-                        xhci_activate_endpoints(session, thisdevice);
                     }else{
                         printk("XHCI TE: Apparaat op poort %d heeft een configuratie descriptor nodig\n", thisdevice->physical_port_id + 1);
                         xhci_send_request_configuration_descriptor(session, thisdevice);
                     }
                 }else if(thisdevice->initialisation_status==2){
                     printk("XHCI TE: Apparaat op poort %d heeft Device Class %s\n", thisdevice->physical_port_id + 1, xhci_class_to_string(thisdevice->configdesc->interfacdesc.bInterfaceClass));
-                    xhci_activate_endpoints(session, thisdevice);
+                    xhci_send_set_config(session,thisdevice,thisdevice->configdesc->configdesc.bConfigurationValue);
                 }else if(thisdevice->initialisation_status==3){
                     printk("XHCI TE: Apparaat op poort %d heeft de configuratie ingesteld\n", thisdevice->physical_port_id + 1);
-                    xhci_send_set_interface(session,thisdevice,thisdevice->configdesc->interfacdesc.bInterfaceNumber);
+                    if(thisdevice->configdesc->interfacdesc.bInterfaceNumber){
+                        xhci_send_set_interface(session,thisdevice,thisdevice->configdesc->interfacdesc.bInterfaceNumber);
+                    }else{
+                        xhci_activate_endpoints(session, thisdevice);
+                    }
                 }else if(thisdevice->initialisation_status==4){
                     printk("XHCI TE: Apparaat op poort %d heeft de interface ingesteld\n", thisdevice->physical_port_id + 1);
-                    xhci_device_event_router(session, thisdevice);
+                    xhci_activate_endpoints(session, thisdevice);
                 }else{
                     printk("XHCI TE: Transfer succesvol voltooid voor apparaat op poort %d, Slot ID: %d\n", thisdevice->physical_port_id + 1, thisdevice->slot_id);
                 }
