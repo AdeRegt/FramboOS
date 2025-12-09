@@ -7,21 +7,26 @@ void xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_end
 
     void* ring = alloc_page();
 
-	XHCIEndpointContext context = ((XHCIEndpointContext*)&device->infostructures->ep0)[ep_addr1];
+	XHCIEndpointContext context = ((XHCIEndpointContext*)device->infostructures + (0x20 * ep_addr1) )[0];
 
-    context.LSA = 0;
-	context.EPType = endpoint->bEndpointAddress & USB_DIR_IN ? XHCI_ENDPOINT_TYPE_BULK_IN : XHCI_ENDPOINT_TYPE_BULK_OUT;
-	context.Cerr = 3;
-	context.MaxPacketSize = endpoint->wMaxPacketSize;
-	context.TRDequeuePointerLow = ((uint32_t) (uint64_t) ring)>>4 ;
-	context.TRDequeuePointerHigh = 0;
-	context.DequeueCycleState = XHCI_CRCS_DEFAULT_CYCLE_STATE;
+	uint32_t* cv = (uint32_t*)device->infostructures + (0x20 * (ep_addr1-1));
+	cv[0] = 0;
+	cv[1] = (endpoint->wMaxPacketSize<<16) | ((endpoint->bEndpointAddress & USB_DIR_IN ? XHCI_ENDPOINT_TYPE_BULK_IN : XHCI_ENDPOINT_TYPE_BULK_OUT)<<3) | (3<<1) | 0;
+	cv[2] = ((uint32_t) (uint64_t) ring) | XHCI_CRCS_DEFAULT_CYCLE_STATE;
+	cv[3] = 0;
+	cv[4] = 0;
+	cv[5] = 0;
+	cv[6] = 0;
+	cv[7] = 0;
+	// printk("@ %d %x %x %x %x %x %x %x %x \n",ep_addr1, cv[0], cv[1], cv[2], cv[3], cv[4], cv[5], cv[6], cv[7]);
 
 	USBRing* control_ring = (USBRing*) alloc_page();
 	control_ring->ring_trbs = ring;
 	control_ring->ring_size = XHCI_COMMAND_RING_SIZE;
 	control_ring->enqueue_index = 0;
 	control_ring->cycle_state = XHCI_CRCS_DEFAULT_CYCLE_STATE;
+	control_ring->endpoint_id = ep_addr1;
+	control_ring->slot_id = device->slot_id;
     
 	if(endpoint->bEndpointAddress & USB_DIR_IN){
 		device->ep_ring_in = control_ring;

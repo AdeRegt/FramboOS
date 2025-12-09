@@ -338,6 +338,8 @@ typedef struct{
     XHCIEndpointContext ep2;
     XHCIEndpointContext ep3;
     XHCIEndpointContext ep4;
+    XHCIEndpointContext ep5;
+    XHCIEndpointContext ep6;
 }__attribute__((packed)) XHCIInputContextBuffer;
 
 typedef struct __attribute__ ((packed)) {
@@ -565,3 +567,4 @@ void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *
 void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring);
 void xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint);
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
+char* xhci_trb_type_to_string(uint8_t trb_type);

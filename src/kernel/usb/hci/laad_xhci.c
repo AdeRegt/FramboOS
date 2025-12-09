@@ -63,10 +63,9 @@ void laad_xhci(pci_class* xhci_device)
 
     task_create("xhci_event_watcher", event_watcher);
 
-    IMAN (0) = 0b11;
-	IMOD (0) = 0;
+    IMAN (0) = 0b10;
+	// IMOD (0) = 0;
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
-    sleep(100);
 
     // printk("XHCI controller is klaar voor gebruik.\n");
 }

@@ -52,8 +52,6 @@ taskswitchstub:
     pop r14
     pop r15
 
-    ; Acknowledge LAPIC interrupt
-    call acknowledge_interrupt
     sti
 
     ; Return from interrupt — pops RIP, CS, RFLAGS, RSP, SS

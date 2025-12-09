@@ -15,8 +15,13 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
         return;
     }
 
-	xhci_set_context(session,device,(usb_endpoint*)&device->configdesc->endpoint1);
+    xhci_set_context(session,device,(usb_endpoint*)&device->configdesc->endpoint1);
 	xhci_set_context(session,device,(usb_endpoint*)&device->configdesc->endpoint2);
+
+	device->infostructures->icc.Aregisters = 0b1100;
+	device->infostructures->slotcontext.ContextEntries = 4;
+    // device->infostructures->icc.ConfigurationValue = device->configdesc->configdesc.bConfigurationValue;
+    // printk("--> %x \n",device->configdesc->configdesc.bConfigurationValue);
 
     ConfigureEndpointCommandTRB* trb = (ConfigureEndpointCommandTRB*) xhci_alloc_command_trb(session);
     trb->CycleBit = XHCI_CRCS_DEFAULT_CYCLE_STATE; // Cycle Bit instellen

@@ -39,6 +39,6 @@ void xhci_handle_command_completion_event(XHCIControllerSession *session, Comman
                 break;
         }
     } else {
-        printk("XHCI CCE: Fout TRB Type %d voor apparaat op poort %d, Completion Code: %s\n", old_trb_type, thisdevice->physical_port_id + 1, xhci_get_resultcode_string(cc_event->CompletionCode));
+        printk("XHCI CCE: Fout %s voor apparaat op poort %d, Completion Code: %s\n", xhci_trb_type_to_string(old_trb_type), thisdevice->physical_port_id + 1, xhci_get_resultcode_string(cc_event->CompletionCode));
     }
 }

@@ -12,6 +12,7 @@ cpu_context_t* scheduler_tick(cpu_context_t* current){
     for(int i = 0; i < max_task; i++){
         ct[i].timer++;
     }
+    acknowledge_interrupt();
     #ifdef DEBUG_TASK
     printk("Naar taak %d met naam %s \n", current_task,ct[current_task].name);
     #endif 
