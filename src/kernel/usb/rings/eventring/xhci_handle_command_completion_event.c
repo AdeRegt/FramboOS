@@ -32,7 +32,8 @@ void xhci_handle_command_completion_event(XHCIControllerSession *session, Comman
                 break;
             case XHCI_TRB_CONFIGURE_ENDPOINT_COMMAND_TRB_TYPE: // Configure Endpoint Command TRB
                 printk("XHCI CCE: Configure Endpoint Command succesvol voltooid voor apparaat op poort %d .\n", thisdevice->physical_port_id + 1);
-                xhci_device_event_router(session, thisdevice);
+                // xhci_device_event_router(session, thisdevice);
+                xhci_activate_endpoints(session, thisdevice);
                 break;
             default:
                 printk("XHCI CCE: Onbekend TRB Type %d succesvol voltooid voor apparaat op poort %d\n", old_trb_type, thisdevice->physical_port_id + 1);

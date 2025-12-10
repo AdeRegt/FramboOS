@@ -1,20 +1,18 @@
 #include "xhci.h"
 
-void xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint)
+uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint,XHCIInputContextBuffer* elliot)
 {
-	unsigned char ep_addr1 = ( endpoint->bEndpointAddress & 0xF ) * 2;
+	uint8_t ep_addr1 = ( endpoint->bEndpointAddress & 0xF ) * 2;
 	ep_addr1 += (endpoint->bEndpointAddress & USB_DIR_IN) ? 1 : 0;
 
     void* ring = alloc_page();
 
-	XHCIEndpointContext context = ((XHCIEndpointContext*)device->infostructures + (0x20 * ep_addr1) )[0];
-
-	uint32_t* cv = (uint32_t*)device->infostructures + (0x20 * (ep_addr1-1));
+	uint32_t* cv = (uint32_t*)elliot + (0x10 * (ep_addr1-1));
 	cv[0] = 0;
-	cv[1] = (endpoint->wMaxPacketSize<<16) | ((endpoint->bEndpointAddress & USB_DIR_IN ? XHCI_ENDPOINT_TYPE_BULK_IN : XHCI_ENDPOINT_TYPE_BULK_OUT)<<3) | (3<<1) | 0;
+	cv[1] = (endpoint->wMaxPacketSize<<16) | ((endpoint->bEndpointAddress & USB_DIR_IN ? XHCI_ENDPOINT_TYPE_BULK_IN : XHCI_ENDPOINT_TYPE_BULK_OUT)<<3) | 0;
 	cv[2] = ((uint32_t) (uint64_t) ring) | XHCI_CRCS_DEFAULT_CYCLE_STATE;
 	cv[3] = 0;
-	cv[4] = 0;
+	cv[4] = 0x400;
 	cv[5] = 0;
 	cv[6] = 0;
 	cv[7] = 0;
@@ -33,4 +31,6 @@ void xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_end
 	}else{
 		device->ep_ring_out = control_ring;
 	}
+
+	return ep_addr1;
 }
