@@ -1,7 +1,11 @@
 #include "beeldscherm.h"
+#include "serialport.h"
 
 void putc(char t)
 {
+    #ifdef ENABLE_COM
+    verstuur_com(t);
+    #endif
     if(t=='\n')
     {
         beeldscherm_x = BEELDSCHERM_OFFSET_X;

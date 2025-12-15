@@ -1,4 +1,5 @@
 #include "beeldscherm.h"
+#include "serialport.h"
 
 void laad_beeldscherm(GraphicsInfo *grafische_info)
 {
@@ -10,6 +11,12 @@ void laad_beeldscherm(GraphicsInfo *grafische_info)
   //
   // het scherm leegmaken
   beeldscherm_leeg();
+
+  #ifdef ENABLE_COM
+  //
+  // com laden
+  laad_com();
+  #endif
 
   //
   // een font inladen...
