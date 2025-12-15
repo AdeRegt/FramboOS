@@ -27,8 +27,10 @@ uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_
 	control_ring->slot_id = device->slot_id;
     
 	if(endpoint->bEndpointAddress & USB_DIR_IN){
+		printk("stdin\n");
 		device->ep_ring_in = control_ring;
 	}else{
+		printk("stdout\n");
 		device->ep_ring_out = control_ring;
 	}
 

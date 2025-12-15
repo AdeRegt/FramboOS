@@ -570,3 +570,4 @@ void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRin
 uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint,XHCIInputContextBuffer* elliot);
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
 char* xhci_trb_type_to_string(uint8_t trb_type);
+void xhci_check_event();

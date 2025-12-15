@@ -11,7 +11,7 @@ void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *
     trb1->ImmediateData = 0;
     trb1->InterrupterTarget = 0;
     trb1->InterruptOnCompletion = 1;
-    trb1->InterruptonShortPacket = 1;
+    trb1->InterruptonShortPacket = 0;
     trb1->NoSnoop = 0;
     trb1->TRBTransferLength = data_length;
     trb1->TRBType = 1;

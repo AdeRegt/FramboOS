@@ -61,7 +61,11 @@ void laad_xhci(pci_class* xhci_device)
     //
     xhci_setup_eventring(session);
 
+    #ifdef USE_MULTI_PROCESS_FOR_BOOT
     task_create("xhci_event_watcher", event_watcher);
+    #else 
+    event_watcher();
+    #endif
 
     IMAN (0) = 0b10;
 	// IMOD (0) = 0;

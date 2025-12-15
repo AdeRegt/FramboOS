@@ -32,7 +32,8 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
 	elliot->slotcontext.ContextEntries = ib;//ia>ib?ia:ib;
     elliot->slotcontext.RootHubPortNumber = device->physical_port_id + 1;
 	// device->epfostructures->slotcontext.ContextEntries = 1;
-	elliot->slotcontext.Speed = 4;
+	elliot->slotcontext.Speed = device->infostructures->slotcontext.Speed;
+    elliot->icc.ConfigurationValue = device->configdesc->configdesc.bConfigurationValue;
 
     ConfigureEndpointCommandTRB* trb = (ConfigureEndpointCommandTRB*) xhci_alloc_command_trb(session);
     trb->CycleBit = XHCI_CRCS_DEFAULT_CYCLE_STATE; // Cycle Bit instellen
