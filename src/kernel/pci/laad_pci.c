@@ -22,11 +22,13 @@ void laad_pci()
                 pci_class* pci = check_pci_entry(bus, slot, function);
                 if(pci != NULL)
                 {
+                    #ifdef ENABLE_XHCI
                     if (pci->class_code == PCI_CLASS_CODE_SERIAL_BUS_CONTROLLER && pci->subclass == PCI_SUBCLASS_USB && pci->prog_if == PCI_INTERFACE_XHCI)
                     {
                         // printk("XHCI apparaat gevonden op bus %d, slot %d, functie %d\n", bus, slot, function);
                         laad_xhci(pci);
                     }
+                    #endif 
                 }
             }
         }

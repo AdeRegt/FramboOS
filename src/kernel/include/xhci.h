@@ -179,6 +179,9 @@
 #define XHCI_TRB_ENABLE_SLOT_COMMAND_TRB_TYPE 9
 #define XHCI_TRB_SET_ADDRESS_COMMAND_TRB_TYPE 11
 #define XHCI_TRB_CONFIGURE_ENDPOINT_COMMAND_TRB_TYPE 12
+#define XHCI_TRB_TRANSFER_EVENT_TRB_TYPE 32
+#define XHCI_TRB_COMMAND_COMPLETION_EVENT_TRB_TYPE 33
+#define XHCI_TRB_PORT_STATUS_CHANGE_EVENT_TRB_TYPE 34
 
 #define XHCI_SETUP_PACKAGE_GET_STATUS 0
 #define XHCI_SETUP_PACKAGE_CLEAR_FEATURE 1
@@ -195,6 +198,8 @@
 #define XHCI_SETUP_PACKAGE_SET_ISOCH_DELAY 49
 
 #define USB_DIR_IN 0x80
+
+#define XHCI_EVENT_HANDLER_TREAT_NAME "xhci_event_watcher"
 
 
 typedef struct{
@@ -571,3 +576,4 @@ uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
 char* xhci_trb_type_to_string(uint8_t trb_type);
 void xhci_check_event();
+XHCIControllerSession* xhci_allocate_new_session();

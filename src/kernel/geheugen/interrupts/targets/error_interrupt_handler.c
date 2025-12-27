@@ -1,6 +1,6 @@
 #include "geheugen.h"
 
-#define createinthandler(y) INTERRUPT error_interrupt_handler_##y##_ (interrupt_frame* frame){printk("ERROR INTERRUPT %d FIRED!\n" , y );cli();hlt();}
+#define createinthandler(y) INTERRUPT error_interrupt_handler_##y##_ (interrupt_frame* frame){printk("ERROR INTERRUPT %d FIRED! @%x \n" , y , frame->ip);cli();hlt();}
 createinthandler(0x00)
 createinthandler(0x01)
 createinthandler(0x02)

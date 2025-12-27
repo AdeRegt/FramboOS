@@ -14,15 +14,15 @@ void xhci_check_event()
                 // Er is een nieuw event
                 uint8_t event_type = (wingD >> 10) & 0x3F;
                 switch(event_type){
-                    case 32: // Transfer Event
+                    case XHCI_TRB_TRANSFER_EVENT_TRB_TYPE: // Transfer Event
                         TransferEventTRB* te_event = (TransferEventTRB*)&event_ring[c*4];
                         xhci_handle_transfer_event(session, te_event);
                         break;
-                    case 33: // Command Completion Event
+                    case XHCI_TRB_COMMAND_COMPLETION_EVENT_TRB_TYPE: // Command Completion Event
                         CommandCompletionEventTRB* cc_event = (CommandCompletionEventTRB*)&event_ring[c*4];
                         xhci_handle_command_completion_event(session, cc_event);
                         break;
-                    case 34: // Port Status Change Event
+                    case XHCI_TRB_PORT_STATUS_CHANGE_EVENT_TRB_TYPE: // Port Status Change Event
                         PortStatusChangeEventTransferRequestBlock* psc_event = (PortStatusChangeEventTransferRequestBlock*)&event_ring[c*4];
                         xhci_handle_port_change_event(session, psc_event);
                         break;
