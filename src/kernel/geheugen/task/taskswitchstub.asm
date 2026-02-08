@@ -11,6 +11,7 @@ extern scheduler_tick
 
 taskswitchstub:
     cli
+
     ; Save general-purpose registers
     push r15
     push r14
@@ -28,14 +29,22 @@ taskswitchstub:
     push rbx
     push rax
 
-    ; Call C scheduler: arg = pointer to current cpu_context (RDI)
+    ; Save interrupt frame (RIP, CS, RFLAGS)
+    mov rax, [rsp + 15*8]   ; RIP
+    push rax
+    mov rax, [rsp + 16*8]   ; CS
+    push rax
+    mov rax, [rsp + 17*8]   ; RFLAGS
+    push rax
+
+    ; Call scheduler(current_context)
     mov rdi, rsp
     call scheduler_tick
 
-    ; RAX = pointer to next task context
+    ; Switch to next task stack/context
     mov rsp, rax
 
-    ; Restore general-purpose registers (reverse order)
+    ; Restore general-purpose registers
     pop rax
     pop rbx
     pop rcx
@@ -53,6 +62,4 @@ taskswitchstub:
     pop r15
 
     sti
-
-    ; Return from interrupt — pops RIP, CS, RFLAGS, RSP, SS
     iretq

@@ -14,12 +14,21 @@ void laad_xhci(pci_class* xhci_device)
     #ifdef XHCI_CHECK_INTERNALS
         uint32_t segcnt = ERSTSZ(0); // Aantal segmenten - 1
         uint32_t oldad = ERSTBA_L(0);
-        printk("Het XHCI EFI event ring systeem bevat %d segmenten en heeft als address %x \n",segcnt,oldad);
-        XHCIEventRingSegmentTable* erst = (XHCIEventRingSegmentTable*) (uint64_t) oldad;
-        printk("@ segment size: %d op address %x \n",erst->ring_segment_size,erst->ring_segment_base_address_low);
-        uint32_t *oppa = (uint32_t*) (uint64_t) erst->ring_segment_base_address_low;
+        uint32_t cr1 = CRCR_L;
+        uint32_t *oppa;
+        uint32_t coc = 50;
+        printk("Het XHCI EFI event ring systeem bevat %d segmenten en heeft als address %x [cr1:%x|x]\n",segcnt,oldad,cr1);
+        if(oldad==0xFFFFFFFF){
+            oppa = (uint32_t*) (((uint64_t) cr1) & 0xFFFFFFFFFFFFFFE0);
+        }else{
+            XHCIEventRingSegmentTable* erst = (XHCIEventRingSegmentTable*) (uint64_t) oldad;
+            printk("@ segment size: %d op address %x \n",erst->ring_segment_size,erst->ring_segment_base_address_low);
+            coc = erst->ring_segment_size;erst->ring_segment_size;
+            oppa = (uint32_t*) (uint64_t) erst->ring_segment_base_address_low;
+        }
+        
         uint32_t f = 0;
-        for(uint32_t i = 0 ; i < erst->ring_segment_size ; i++){
+        for(uint32_t i = 0 ; i < coc ; i++){
             uint32_t aa = oppa[(i*4)+0];
             uint32_t ab = oppa[(i*4)+1];
             uint32_t ac = oppa[(i*4)+2];
@@ -27,7 +36,13 @@ void laad_xhci(pci_class* xhci_device)
             // if( (ad & 0x1) == XHCI_CRCS_DEFAULT_CYCLE_STATE ){
                 uint8_t event_type = (ad >> 10) & 0x3F;
                 if(event_type){
-                    printk("|%d",event_type);f++;
+                    if(oldad==0xFFFFFFFF){
+                        printk("|%d",event_type);f++;
+                    }else if(event_type==33){
+                        uint32_t* eppa = (uint32_t*) (uint64_t) aa;
+                        event_type = (eppa[3] >> 10) & 0x3F;
+                        printk("[%x] %d",aa,event_type);f++;
+                    }
                 }
             // }
         }
@@ -87,7 +102,9 @@ void laad_xhci(pci_class* xhci_device)
     //
     xhci_setup_eventring(session);
 
+    #ifdef XHCI_XHCI_TREAD
     task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
+    #endif 
 
     IMAN (0) = 0b10;
 	// IMOD (0) = 0;
@@ -95,6 +112,10 @@ void laad_xhci(pci_class* xhci_device)
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
     #else 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
+    #endif 
+    #ifndef XHCI_XHCI_TREAD
+    sleep(100);
+    event_watcher();
     #endif 
     // printk("XHCI controller is klaar voor gebruik.\n");
 }

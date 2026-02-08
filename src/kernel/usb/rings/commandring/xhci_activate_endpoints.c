@@ -42,14 +42,6 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
     trb->DataBufferPointerLo = (uint32_t)(uint64_t)(elliot);
 	trb->DataBufferPointerHi = (uint32_t)0;
 
-    // uint32_t* vxc = (uint32_t*) device->epfostructures;
-    // for(int i = 0 ; i < 100 ; i++){
-    //     if(vxc[i]){
-    //         printk("[%x:%x] ",i,vxc[i]);
-    //     }
-    // }
-    // for(;;);
-
     xhci_thingdong(session, device, (void*)trb, 0, 0);
 
 }

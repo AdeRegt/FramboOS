@@ -5,6 +5,7 @@ uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_
 	uint8_t ep_addr1 = ( endpoint->bEndpointAddress & 0xF ) * 2;
 	ep_addr1 += (endpoint->bEndpointAddress & USB_DIR_IN) ? 1 : 0;
 
+	// printk("endpoint: bDescriptorType:%x bEndpointAddress:%x bLength:%x bmAttributes:%x wMaxPacketSize:%x udef:%x \n",endpoint->bDescriptorType,endpoint->bEndpointAddress,endpoint->bLength,endpoint->bmAttributes,endpoint->wMaxPacketSize,endpoint->udef);
     void* ring = alloc_page();
 
 	uint32_t* cv = (uint32_t*)elliot + (0x10 * (ep_addr1-1));

@@ -100,10 +100,9 @@ typedef struct{
 }interrupt_frame;
 
 typedef struct cpu_context {
-    uint64_t r15, r14, r13, r12, r11, r10, r09, r08;
-    // uint64_t r07, r06, r05, r04, r03, r02, r01;
+    uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
     uint64_t rsi, rdi, rbp, rdx, rcx, rbx, rax;
-    uint64_t rip, rsp, rflags;
+    uint64_t rip, cs, rflags;
 } cpu_context_t;
 
 typedef struct {
