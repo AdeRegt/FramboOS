@@ -101,8 +101,9 @@ typedef struct{
 
 typedef struct cpu_context {
     uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
-    uint64_t rsi, rdi, rbp, rdx, rcx, rbx, rax;
-    uint64_t rip, cs, rflags;
+    uint64_t rdi, rsi, rbp, rbx, rdx, rcx, rax;
+    uint64_t rip, cs, rflags, rsp, ss;
+    uint64_t cr3;
 } cpu_context_t;
 
 typedef struct {
