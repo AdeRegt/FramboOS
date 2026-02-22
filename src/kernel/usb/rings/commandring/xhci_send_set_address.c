@@ -30,31 +30,24 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	}
 
     void *localring = alloc_page();
-	XHCIInputContextBuffer *infostructures = (XHCIInputContextBuffer*) alloc_page();
-	infostructures->icc.Aregisters = 0b11;
-	infostructures->slotcontext.RootHubPortNumber = device->physical_port_id + 1;
-	infostructures->slotcontext.ContextEntries = 1;
-	infostructures->slotcontext.Speed = portspeed;
-	// infostructures->ep0.LSA = 0;
-	// infostructures->ep0.EPType = 4;
-	// // infostructures->ep0.Cerr = 3;
-	// infostructures->ep0.MaxPacketSize = calculatedportspeed;
-	// infostructures->ep0.TRDequeuePointerLow = ((uint32_t) (uint64_t) localring)>>4 ;
-	// infostructures->ep0.TRDequeuePointerHigh = 0;
-	// infostructures->ep0.DequeueCycleState = 1;
-	// infostructures->ep0.MaxESITPayloadLow = 2;
+	void *infostructures = alloc_page();
+	XHCIInputControlContext *icc = (XHCIInputControlContext*) infostructures;
+	icc->Aregisters = 0b11;
 
-	uint64_t ff = (uint64_t) infostructures;
-	uint32_t* cv = (uint32_t*)ff;
-	cv[0x10 + 0] = 0;
-	cv[0x10 + 1] = (calculatedportspeed<<16) | (0x20) | 0;
-	cv[0x10 + 2] = ((uint32_t) (uint64_t) localring) | XHCI_CRCS_DEFAULT_CYCLE_STATE;
-	cv[0x10 + 3] = 0;
-	cv[0x10 + 4] = 0x200;
-	cv[0x10 + 5] = 0;
-	cv[0x10 + 6] = 0;
-	cv[0x10 + 7] = 0;
-    
+	XHCISlotContext *isc = (XHCISlotContext*) (((uint64_t)infostructures) + (xhci_is_64(session)?0x40:0x20));
+	isc->RootHubPortNumber = device->physical_port_id + 1;
+	isc->ContextEntries = 1;
+	isc->Speed = portspeed;
+
+	XHCIEndpointContext *epc = (XHCIEndpointContext*) (((uint64_t)infostructures) + (xhci_is_64(session)?0x80:0x40));
+	epc->LSA = 0;
+	epc->EPType = 4;
+	epc->MaxPacketSize = calculatedportspeed;
+	epc->TRDequeuePointerLow = ((uint32_t) (uint64_t) localring)>>4 ;
+	epc->TRDequeuePointerHigh = 0;
+	epc->DequeueCycleState = 1;
+	epc->MaxESITPayloadLow = 2;
+	
 	session->device_context_base_address_array[device->slot_id] = ((uint64_t)alloc_page());
 	
 	trb->DataBufferPointerLo = (uint32_t)(uint64_t)(infostructures);

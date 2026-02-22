@@ -334,19 +334,6 @@ typedef struct {
     uint8_t padding[0xC];
 }__attribute__((packed)) XHCIEndpointContext;
 
-typedef struct{
-    XHCIInputControlContext icc;
-    XHCISlotContext slotcontext;
-    uint8_t paddingB[0x10];
-    XHCIEndpointContext ep0;
-    XHCIEndpointContext ep1;
-    XHCIEndpointContext ep2;
-    XHCIEndpointContext ep3;
-    XHCIEndpointContext ep4;
-    XHCIEndpointContext ep5;
-    XHCIEndpointContext ep6;
-}__attribute__((packed)) XHCIInputContextBuffer;
-
 typedef struct __attribute__ ((packed)) {
   uint8_t bLength;
   uint8_t bDescriptorType;
@@ -511,9 +498,7 @@ typedef struct {
     uint8_t physical_port_id;
     void* pointer_to_requested_trb;
     uint8_t slot_id;
-    XHCIInputContextBuffer *infostructures;
-    XHCIInputContextBuffer *epfostructures1;
-    XHCIInputContextBuffer *epfostructures2;
+    void *infostructures;
     USBRing* commandring;
     USBRing* ep_ring_in;
     USBRing* ep_ring_out;
@@ -572,8 +557,9 @@ void xhci_send_set_config(XHCIControllerSession *session, USBDevice* device, int
 void xhci_device_event_router(XHCIControllerSession *session, USBDevice* device);
 void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
 void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring);
-uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint,XHCIInputContextBuffer* elliot);
+uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint,void* elliot);
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
 char* xhci_trb_type_to_string(uint8_t trb_type);
 void xhci_check_event();
 XHCIControllerSession* xhci_allocate_new_session();
+uint8_t xhci_is_64(XHCIControllerSession *session);

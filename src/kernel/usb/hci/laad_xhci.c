@@ -57,6 +57,14 @@ void laad_xhci(pci_class* xhci_device)
     install_device_interrupt(xhci_device, xhci_interrupt_handler);
     #endif 
 
+    #ifdef DISABLE_32_BIT_XHCI
+    if(!xhci_is_64(session))
+    {
+        printk("ERROR: xhci-driver only works on 64bit contextsizes; halting\n");
+        return;
+    }
+    #endif
+
     //
     // Voer BIOS handoff uit
     //
