@@ -66,14 +66,14 @@ void laad_xhci(pci_class* xhci_device)
     #endif
 
     //
-    // Voer BIOS handoff uit
-    //
-    perform_bios_handoff(session);
-
-    //
     // Schakel bus mastering in
     //
     pci_enable_busmastering(xhci_device->bus, xhci_device->slot, xhci_device->function);
+
+    //
+    // Voer BIOS handoff uit
+    //
+    perform_bios_handoff(session);
 
     //
     // Stop controller
@@ -114,7 +114,7 @@ void laad_xhci(pci_class* xhci_device)
     task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
     #endif 
 
-    IMAN (0) = 0b10;
+    // IMAN (0) = 0b10;
 	// IMOD (0) = 0;
     #ifdef ENABLE_XHCI_INTERUPTS
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;

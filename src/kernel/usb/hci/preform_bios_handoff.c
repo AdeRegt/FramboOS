@@ -27,6 +27,7 @@ void perform_bios_handoff(XHCIControllerSession *session)
 				printk("perform_bios_handoff: BIOS/UEFI handoff uitvoeren.\n");
 				((volatile uint32_t *)cappointer)[0] |= 0x1000000;
 				captimeout--;
+				sleep(10);
 				if (captimeout == 0)
 				{
 					break;

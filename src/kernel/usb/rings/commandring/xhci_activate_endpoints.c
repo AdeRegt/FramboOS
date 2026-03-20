@@ -33,11 +33,11 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
 
     XHCISlotContext *isc = (XHCISlotContext*) (((uint64_t)mostar) + (xhci_is_64(session)?0x40:0x20));
 	isc->RootHubPortNumber = device->physical_port_id + 1;
-	isc->ContextEntries = 3;
+	isc->ContextEntries = 4;
 	isc->Speed = portspeed;
 
-    uint32_t windowA = ((ep_addr1)*(xhci_is_64(session)?0x40:0x20));
-    uint32_t windowB = ((ep_addr2)*(xhci_is_64(session)?0x40:0x20));
+    uint32_t windowA = ((ep_addr1+1)*(xhci_is_64(session)?0x40:0x20));
+    uint32_t windowB = ((ep_addr2+1)*(xhci_is_64(session)?0x40:0x20));
 
 	XHCIEndpointContext *epc1 = (XHCIEndpointContext*) (((uint64_t)mostar) + windowA);
 	epc1->MaxPacketSize = device->configdesc->endpoint1.wMaxPacketSize;
@@ -63,7 +63,7 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
     trb->SlotID = device->slot_id; // Slot ID van het apparaat inst
     trb->DataBufferPointerLo = (uint32_t)(uint64_t)(mostar);
 	trb->DataBufferPointerHi = (uint32_t)0;
-
+    
     xhci_thingdong(session, device, (void*)trb, 0, 0);
 
 }

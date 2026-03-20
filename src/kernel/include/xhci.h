@@ -557,7 +557,6 @@ void xhci_send_set_config(XHCIControllerSession *session, USBDevice* device, int
 void xhci_device_event_router(XHCIControllerSession *session, USBDevice* device);
 void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
 void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring);
-uint8_t xhci_set_context(XHCIControllerSession* session, USBDevice* device, usb_endpoint* endpoint,void* elliot);
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
 char* xhci_trb_type_to_string(uint8_t trb_type);
 void xhci_check_event();
