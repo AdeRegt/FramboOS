@@ -201,6 +201,18 @@
 
 #define XHCI_EVENT_HANDLER_TREAT_NAME "xhci_event_watcher"
 
+#define SCSI_CBW_SIGNATURE 0x43425355
+#define SCSI_INQUIRY 0x12 
+
+typedef struct {
+    uint32_t dCBWSignature;      // 0x43425355
+    uint32_t dCBWTag;            // arbitrary (echoed back in CSW)
+    uint32_t dCBWDataTransferLength;
+    uint8_t  bmCBWFlags;         // 0x80 = IN, 0x00 = OUT
+    uint8_t  bCBWLUN;
+    uint8_t  bCBWCBLength;       // command length (1–16)
+    uint8_t  CBWCB[16];          // SCSI command
+} __attribute__((packed)) cbw;
 
 typedef struct{
     uint32_t ring_segment_base_address_low;
@@ -555,10 +567,13 @@ void *xhci_alloc_trb_ring(USBRing *ring);
 void xhci_ring_trb_ring(XHCIControllerSession *session, USBDevice* device, USBRing *ring, void* trb);
 void xhci_send_set_config(XHCIControllerSession *session, USBDevice* device, int config_id);
 void xhci_device_event_router(XHCIControllerSession *session, USBDevice* device);
-void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
-void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, USBRing *ring);
+void xhci_send_bulk(XHCIControllerSession *session, USBDevice* device, uint64_t data_length, void* data);
+void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, uint64_t data_length, void* data);
+void xhci_bulk_transfer(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
 char* xhci_trb_type_to_string(uint8_t trb_type);
 void xhci_check_event();
 XHCIControllerSession* xhci_allocate_new_session();
 uint8_t xhci_is_64(XHCIControllerSession *session);
+cbw* create_scsi_command();
+void create_inquery_command(XHCIControllerSession *session, USBDevice* device);

@@ -63,6 +63,28 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
     trb->SlotID = device->slot_id; // Slot ID van het apparaat inst
     trb->DataBufferPointerLo = (uint32_t)(uint64_t)(mostar);
 	trb->DataBufferPointerHi = (uint32_t)0;
+
+    USBRing* ringdec1 = (USBRing*) alloc_page();
+    ringdec1->cycle_state = 1;
+    ringdec1->endpoint_id = ep_addr1;
+    ringdec1->ring_size = 20;
+    ringdec1->slot_id = device->slot_id;
+    ringdec1->ring_trbs = ring1;
+
+    USBRing* ringdec2 = (USBRing*) alloc_page();
+    ringdec2->cycle_state = 1;
+    ringdec2->endpoint_id = ep_addr2;
+    ringdec2->ring_size = 20;
+    ringdec2->slot_id = device->slot_id;
+    ringdec2->ring_trbs = ring2;
+
+    if(device->configdesc->endpoint1.bEndpointAddress & USB_DIR_IN ){
+        device->ep_ring_in = ringdec1;
+        device->ep_ring_out = ringdec2;
+    }else{
+        device->ep_ring_in = ringdec2;
+        device->ep_ring_out = ringdec1;
+    }
     
     xhci_thingdong(session, device, (void*)trb, 0, 0);
 
