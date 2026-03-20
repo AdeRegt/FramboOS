@@ -46,6 +46,16 @@ void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB
                     printk("XHCI TE: Transfer succesvol voltooid voor apparaat op poort %d, Slot ID: %d\n", thisdevice->physical_port_id + 1, thisdevice->slot_id);
                 }
                 break;
+            case XHCI_TRB_NORMAL_TRB_TYPE: // Normal Stage TRB
+                TransferTRB* trs = (TransferTRB*) (uint64_t)transfer_event->DataBufferPointerLo;
+                if(thisdevice->initialisation_status==5){
+                    read_inquery_command(session,thisdevice);
+                }else if(thisdevice->initialisation_status==6){
+                    handle_inquery_command(session,thisdevice,trs);
+                }else{
+                    printk("XHCI TE: Onbekende Normale TRB succesvol voltooid voor apparaat op poort %d\n", thisdevice->physical_port_id + 1);
+                }
+                break;
             default:
                 printk("XHCI TE: Onbekend TRB Type %d succesvol voltooid voor apparaat op poort %d\n", old_trb_type, thisdevice->physical_port_id + 1);
                 break;

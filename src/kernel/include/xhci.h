@@ -173,6 +173,7 @@
 
 #define XHCI_CRCS_DEFAULT_CYCLE_STATE 1
 
+#define XHCI_TRB_NORMAL_TRB_TYPE 1
 #define XHCI_TRB_SETUP_TRB_TYPE 2
 #define XHCI_TRB_DATA_TRB_TYPE 3
 #define XHCI_TRB_STATUS_TRB_TYPE 4
@@ -202,7 +203,21 @@
 #define XHCI_EVENT_HANDLER_TREAT_NAME "xhci_event_watcher"
 
 #define SCSI_CBW_SIGNATURE 0x43425355
+#define SCSI_CBW_LENGTH 6 
 #define SCSI_INQUIRY 0x12 
+#define SCSI_INQUIRY_LENGTH 36 
+
+typedef struct {
+    uint8_t peripheral_device_type;   // Byte 0
+    uint8_t removable;                // Byte 1
+    uint8_t version;                  // Byte 2
+    uint8_t response_data_format;     // Byte 3
+    uint8_t additional_length;        // Byte 4
+    uint8_t flags[3];                 // Bytes 5–7
+    char vendor_id[8];                // Bytes 8–15
+    char product_id[16];              // Bytes 16–31
+    char product_revision[4];         // Bytes 32–35
+} inquiry_response;
 
 typedef struct {
     uint32_t dCBWSignature;      // 0x43425355
@@ -577,3 +592,5 @@ XHCIControllerSession* xhci_allocate_new_session();
 uint8_t xhci_is_64(XHCIControllerSession *session);
 cbw* create_scsi_command();
 void create_inquery_command(XHCIControllerSession *session, USBDevice* device);
+void read_inquery_command(XHCIControllerSession *session, USBDevice* device);
+void handle_inquery_command(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
