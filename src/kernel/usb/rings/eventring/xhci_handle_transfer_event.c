@@ -52,6 +52,10 @@ void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB
                     read_inquery_command(session,thisdevice);
                 }else if(thisdevice->initialisation_status==6){
                     handle_inquery_command(session,thisdevice,trs);
+                }else if(thisdevice->initialisation_status==7){
+                    handle_inquery_status(session,thisdevice,trs);
+                }else if(thisdevice->initialisation_status==8){
+                    msd_router(session,thisdevice,trs);
                 }else{
                     printk("XHCI TE: Onbekende Normale TRB succesvol voltooid voor apparaat op poort %d\n", thisdevice->physical_port_id + 1);
                 }

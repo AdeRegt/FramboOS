@@ -14,5 +14,17 @@ void handle_inquery_command(XHCIControllerSession *session, USBDevice* device, T
     for(int i = 0 ; i < 4 ; i++){
         printk("%c",inc->product_revision[i]);
     }
-    printk(" \n");for(;;);
+    printk(" \n");
+
+    device->initialisation_status = 7;
+
+    device->devicetype = 1;
+
+    MassStorageDevice* msd = (MassStorageDevice*) alloc_page();
+    msd->inquery = inc;
+
+    device->attachment = msd;
+
+    void* data = alloc_page();
+    xhci_recieve_bulk(session,device,13,data);
 }

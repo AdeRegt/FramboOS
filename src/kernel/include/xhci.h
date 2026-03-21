@@ -203,9 +203,18 @@
 #define XHCI_EVENT_HANDLER_TREAT_NAME "xhci_event_watcher"
 
 #define SCSI_CBW_SIGNATURE 0x43425355
+#define SCSI_CSW_SIGNATURE 0x53425355
 #define SCSI_CBW_LENGTH 6 
 #define SCSI_INQUIRY 0x12 
 #define SCSI_INQUIRY_LENGTH 36 
+#define SCSI_READ 0x28 
+
+typedef struct {
+    uint32_t dCSWSignature;   // 0x53425355 ("USBS" little-endian)
+    uint32_t dCSWTag;         // Must match CBW tag
+    uint32_t dCSWDataResidue; // Difference between expected and actual data
+    uint8_t  bCSWStatus;      // Status code
+} csw;
 
 typedef struct {
     uint8_t peripheral_device_type;   // Byte 0
@@ -532,6 +541,8 @@ typedef struct {
     USBStandardDeviceDescriptor* devdesc;
     int initialisation_status;
     USBStandardConfigurationDescriptor* configdesc;
+    int devicetype;
+    void* attachment;
 }__attribute__((packed)) USBDevice;
 
 typedef struct {
@@ -545,6 +556,34 @@ typedef struct {
     USBDevice devices[5];
     uint8_t max_ports;
 }__attribute__((packed)) XHCIControllerSession;
+
+typedef struct{
+    uint8_t attr;
+    uint8_t chs_start[3];
+    uint8_t type;
+    uint8_t chs_end[3];
+    uint32_t lba;
+    uint32_t length;
+}__attribute__((packed)) master_boot_record_entry;
+
+typedef struct{
+    uint8_t bootstrap[440];
+    uint32_t signature;
+    uint16_t rsd;
+    master_boot_record_entry part1;
+    master_boot_record_entry part2;
+    master_boot_record_entry part3;
+    master_boot_record_entry part4;
+    uint8_t bootsignature[2];
+}__attribute__((packed)) master_boot_record;
+
+typedef struct{
+    inquiry_response* inquery;
+    master_boot_record* mbr;
+    uint8_t loop_id;
+    uint8_t target;
+    uint8_t expected_sector_count;
+}MassStorageDevice;
 
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;
@@ -594,3 +633,6 @@ cbw* create_scsi_command();
 void create_inquery_command(XHCIControllerSession *session, USBDevice* device);
 void read_inquery_command(XHCIControllerSession *session, USBDevice* device);
 void handle_inquery_command(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
+void handle_inquery_status(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
+void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
+void msd_read_sector(XHCIControllerSession *session, USBDevice* device,uint8_t lba,uint8_t length);
