@@ -50,6 +50,12 @@
 
 #define LAPIC_TIMER_VECTOR 0x20
 
+
+#define SYSCALL_REG_STAR 0xC0000081
+#define SYSCALL_REG_LSTAR 0xC0000082
+#define SYSCALL_REG_CSTAR 0xC0000083
+#define IA32_EFER 0xC0000080
+
 typedef struct{
     uint8_t present: 1;
     uint8_t readwrite: 1;
@@ -161,6 +167,7 @@ extern __attribute__((interrupt)) void error_interrupt_handler_0x1F_(interrupt_f
 extern task_t ct[10];
 extern int current_task;
 extern int max_task;
+extern void syscallentrypoint();
 
 void laad_geheugen(BootInfo *memory_info);
 char* geheugen_geheugenblok_type_naar_string(uint32_t type);
@@ -194,3 +201,6 @@ void memcpy(void* dest, const void* src, uint64_t n);
 void task_create(char* name, void (*func)());
 void timersleep(uint64_t secs);
 void hlt();
+void enable_syscall();
+void cpu_get_specific_registers(uint32_t msr, uint32_t *lo, uint32_t *hi);
+void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);

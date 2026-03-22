@@ -19,6 +19,10 @@ void kernel_main(BootInfo *bootinfo)
     bs_leeg();
 
     //
+    // Syscall instructie aanmelden
+    enable_syscall();
+
+    //
     // PCI apparaten initialiseren
     laad_pci();
 
