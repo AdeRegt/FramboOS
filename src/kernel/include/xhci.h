@@ -577,13 +577,75 @@ typedef struct{
     uint8_t bootsignature[2];
 }__attribute__((packed)) master_boot_record;
 
+typedef struct {
+    uint8_t  jmpBoot[3];        // 0x00: Jump instruction
+    char     OEMName[8];        // 0x03: OEM name
+
+    uint16_t BytsPerSec;        // 0x0B: Bytes per sector (e.g. 512)
+    uint8_t  SecPerClus;        // 0x0D: Sectors per cluster
+    uint16_t RsvdSecCnt;        // 0x0E: Reserved sector count
+    uint8_t  NumFATs;           // 0x10: Number of FATs (usually 2)
+    uint16_t RootEntCnt;        // 0x11: 0 for FAT32
+    uint16_t TotSec16;          // 0x13: Total sectors (if < 65536)
+    uint8_t  Media;             // 0x15: Media descriptor
+    uint16_t FATSz16;           // 0x16: 0 for FAT32
+    uint16_t SecPerTrk;         // 0x18: Sectors per track
+    uint16_t NumHeads;          // 0x1A: Number of heads
+    uint32_t HiddSec;           // 0x1C: Hidden sectors
+    uint32_t TotSec32;          // 0x20: Total sectors (if >= 65536)
+    uint32_t FATSz32;           // 0x24: Sectors per FAT
+    uint16_t ExtFlags;          // 0x28: Flags
+    uint16_t FSVer;             // 0x2A: Version (usually 0)
+    uint32_t RootClus;          // 0x2C: Root directory start cluster
+    uint16_t FSInfo;            // 0x30: FSInfo sector number
+    uint16_t BkBootSec;         // 0x32: Backup boot sector
+    uint8_t  Reserved[12];      // 0x34: Reserved
+    uint8_t  DrvNum;            // 0x40: Drive number
+    uint8_t  Reserved1;         // 0x41: Reserved
+    uint8_t  BootSig;           // 0x42: Extended boot signature (0x29)
+    uint32_t VolID;             // 0x43: Volume serial number
+    char     VolLab[11];        // 0x47: Volume label
+    char     FilSysType[8];     // 0x52: "FAT32   "
+    uint8_t  BootCode[420];     // 0x5A: Boot code
+    uint16_t Signature;         // 0x1FE: 0xAA55
+}__attribute__((packed)) fat32_volume_boot_record;
+
+typedef struct {
+    char     Name[11];
+    uint8_t  Attr;
+    uint8_t  NTRes;
+    uint8_t  CrtTimeTenth;
+    uint16_t CrtTime;
+    uint16_t CrtDate;
+    uint16_t LstAccDate;
+    uint16_t FstClusHI;
+    uint16_t WrtTime;
+    uint16_t WrtDate;
+    uint16_t FstClusLO;
+    uint32_t FileSize;
+} __attribute__((packed)) fat32_file_entry;
+
+typedef struct {
+    fat32_file_entry files[16];
+} __attribute__((packed)) fat32_directory;
+
 typedef struct{
     inquiry_response* inquery;
     master_boot_record* mbr;
+    fat32_volume_boot_record* vbr;
+    fat32_directory* root_directory;
     uint8_t loop_id;
     uint8_t target;
     uint8_t expected_sector_count;
+    uint32_t lba_offset;
+    volatile uint8_t file_load_is_ready;
+    volatile void* filebuffer;
 }MassStorageDevice;
+
+typedef struct{
+    XHCIControllerSession *session; 
+    USBDevice* device;
+}MSDDevice;
 
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;
@@ -635,4 +697,4 @@ void read_inquery_command(XHCIControllerSession *session, USBDevice* device);
 void handle_inquery_command(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
 void handle_inquery_status(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
 void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
-void msd_read_sector(XHCIControllerSession *session, USBDevice* device,uint8_t lba,uint8_t length);
+void msd_read_sector(XHCIControllerSession *session, USBDevice* device,uint32_t lba,uint8_t length);
