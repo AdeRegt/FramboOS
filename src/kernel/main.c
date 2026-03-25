@@ -33,8 +33,10 @@ void kernel_main(BootInfo *bootinfo)
     //
     // Wachten op beschikbaarheid van FS
     wachten_op_bestandssysteem();
-    printk("Het bestandssysteem is gesignaleerd!\n");
-    // exec("hello.bin","")
+    beeldscherm_leeg();
+    printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
+    uint8_t* g = bestand("FASM.BIN");
+    for(int i = 0 ; i < 0x10 ; i++){printk("%c",g[i]);}
 
     while (1)
     {

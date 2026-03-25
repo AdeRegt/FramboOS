@@ -636,10 +636,9 @@ typedef struct{
     fat32_directory* root_directory;
     uint8_t loop_id;
     uint8_t target;
-    uint8_t expected_sector_count;
     uint32_t lba_offset;
-    volatile uint8_t file_load_is_ready;
-    volatile void* filebuffer;
+    uint8_t file_load_is_ready;
+    void* filebuffer;
 }MassStorageDevice;
 
 typedef struct{
@@ -649,6 +648,7 @@ typedef struct{
 
 extern XHCIControllerSession xhci_session[10];
 extern int xhci_session_count;
+extern int xhci_keep_running;
 
 // extern uint64_t device_context_base_address_array[XHCI_MAX_SLOTS + 1];
 // extern uint32_t xhci_command_ring[XHCI_COMMAND_RING_SIZE*4];
@@ -698,3 +698,6 @@ void handle_inquery_command(XHCIControllerSession *session, USBDevice* device, T
 void handle_inquery_status(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
 void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event);
 void msd_read_sector(XHCIControllerSession *session, USBDevice* device,uint32_t lba,uint8_t length);
+void* msd_load_file(XHCIControllerSession *session, USBDevice* device,fat32_file_entry* bestand);
+uint8_t xhci_check_for_new_devs();
+void xhci_custom_check(XHCIControllerSession *session);

@@ -9,7 +9,12 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
         msd->loop_id=2;
         return;
     }
-    else if(msd->target==0){
+    if(msd->loop_id==3){
+        uint8_t* inc = (uint8_t*) (uint64_t)transfer_event->DataBufferPointerLo;
+        csw* c = (csw*) inc;
+        printk("scsi response: status: %d residue: %d \n",c->bCSWStatus,c->dCSWDataResidue);
+    }
+    if(msd->target==0){
         if(msd->loop_id==0){
             msd_read_sector(session,device,0,1);
         }else if(msd->loop_id==2){
@@ -49,30 +54,35 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
             uint8_t* inc = (uint8_t*) (uint64_t)transfer_event->DataBufferPointerLo;
             msd->root_directory = (fat32_directory*) inc;
         }else if(msd->loop_id==3){
-            // printk("De volgende bestanden zijn beschikbaar in de rootdirectory van dit bestandensysteem: \n");
-            // for(int i = 0 ; i < 16 ; i++){
-            //     fat32_file_entry file = msd->root_directory->files[i];
-            //     if(file.Attr==0x20){
-            //         for(int z = 0 ; z < 11 ; z++){
-            //             printk("%c",file.Name[z]);
-            //         }
-            //         printk(" filesize:%d lba:%d \n",file.FileSize,file.FstClusLO);
-            //     }
-            // }
-            msd->target=3;
-
+            
             MSDDevice* dev = (MSDDevice*) alloc_page();
             dev->device = device;
             dev->session = session;
             bs_regristreer(dev);
+
+            #ifndef XHCI_XHCI_TREAD
+            xhci_keep_running = 0;
+            #endif 
+
         }
     }
     else if(msd->target==3){
         if(msd->loop_id==2){
             uint8_t* inc = (uint8_t*) (uint64_t)transfer_event->DataBufferPointerLo;
             msd->filebuffer = inc;
+            printk("done recieving file part\n");
+
+            #ifndef XHCI_XHCI_TREAD
+            xhci_keep_running = 0;
+            #endif 
+            return;
         }else if(msd->loop_id==3){
             msd->file_load_is_ready = 1;
+            printk("done loading file\n");
+
+            #ifndef XHCI_XHCI_TREAD
+            xhci_keep_running = 0;
+            #endif 
         }
     }
     if(msd->loop_id==2){

@@ -122,7 +122,13 @@ void laad_xhci(pci_class* xhci_device)
 	USBCMD = USBCMD | USBCMD_MASK_RS;
     #endif 
     #ifndef XHCI_XHCI_TREAD
-    sleep(100);
+    sleep(10000);
+    uint8_t rs = xhci_check_for_new_devs();
+    printk("Er zijn %d poorten klaar om gelezen te worden!\n",rs);
+    if(rs==0){
+        xhci_custom_check(session);
+    }
+    xhci_keep_running = 1;
     event_watcher();
     #endif 
     // printk("XHCI controller is klaar voor gebruik.\n");
