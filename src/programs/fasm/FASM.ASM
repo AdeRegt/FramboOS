@@ -16,6 +16,18 @@ start:
 	mov	esi,_logo
 	call	display_string
 
+	; negeer echte argc/argv
+    sub rsp, 6*8
+
+    mov qword [rsp], 2          ; argc
+    mov qword [rsp+8], arg1
+    mov qword [rsp+16], arg2
+    mov qword [rsp+24], 0    ; argv NULL
+	mov qword [rsp+32], 0    ; envp NULL
+	mov qword [rsp+40], 0    ; fake auxv terminator
+
+    ; ga verder alsof dit echte args zijn
+
 	mov	[command_line],rsp
 	mov	rcx,[rsp]
 	lea	rbx,[rsp+8+rcx*8+8]
@@ -341,6 +353,9 @@ segment readable writeable
 align 4
 
 include 'source\SOURCE\VARIABLE.INC'
+
+arg1 db "test.asm",0
+arg2 db "test.bin",0
 
 command_line dq ?
 memory_setting dd ?

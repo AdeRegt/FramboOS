@@ -123,10 +123,18 @@ void laad_xhci(pci_class* xhci_device)
     #endif 
     #ifndef XHCI_XHCI_TREAD
     sleep(10000);
-    uint8_t rs = xhci_check_for_new_devs();
-    printk("Er zijn %d poorten klaar om gelezen te worden!\n",rs);
-    if(rs==0){
-        xhci_custom_check(session);
+    while(1){
+        uint8_t rs = xhci_check_for_new_devs();
+        printk("Er zijn %d poorten klaar om gelezen te worden met activatie!\n",rs);
+        if(rs!=0){
+            break;
+        }
+        rs = xhci_custom_check(session);
+        printk("Er zijn %d poorten klaar om gelezen te worden met portpolling!\n",rs);
+        if(rs!=0){
+            break;
+        }
+        sleep(10000);
     }
     xhci_keep_running = 1;
     event_watcher();

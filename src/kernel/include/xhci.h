@@ -700,4 +700,4 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
 void msd_read_sector(XHCIControllerSession *session, USBDevice* device,uint32_t lba,uint8_t length);
 void* msd_load_file(XHCIControllerSession *session, USBDevice* device,fat32_file_entry* bestand);
 uint8_t xhci_check_for_new_devs();
-void xhci_custom_check(XHCIControllerSession *session);
+uint8_t xhci_custom_check(XHCIControllerSession *session);
