@@ -31,6 +31,7 @@
 #define IDT_OFFSET 0x20
 
 #define GDT_KERNEL_CODE 0x08
+#define GDT_KERNEL_DATA 0x10
 
 #define PIC1		0x20		/* IO base address for master PIC */
 #define PIC2		0xA0		/* IO base address for slave PIC */
@@ -110,12 +111,14 @@ typedef struct cpu_context {
     uint64_t rdi, rsi, rbp, rbx, rdx, rcx, rax;
     uint64_t rip, cs, rflags, rsp, ss;
     uint64_t cr3;
+    uint64_t gs, fs, es, ds, cpl;
 } cpu_context_t;
 
 typedef struct {
     cpu_context_t context;
     uint8_t state; // 0 = inactive, 1 = active
     uint64_t timer;
+    uint8_t timerswatch;
     char name[32];
 } task_t;
 
@@ -196,7 +199,7 @@ void enable_lapic();
 void write_msr(uint32_t msr, uint64_t value);
 uint8_t get_active_int();
 void taskswitchstub();
-cpu_context_t* scheduler_tick(cpu_context_t* current);
+void scheduler_tick();
 void memcpy(void* dest, const void* src, uint64_t n);
 void task_create(char* name, void (*func)());
 void timersleep(uint64_t secs);
@@ -204,3 +207,4 @@ void hlt();
 void enable_syscall();
 void cpu_get_specific_registers(uint32_t msr, uint32_t *lo, uint32_t *hi);
 void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);
+void yield();

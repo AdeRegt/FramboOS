@@ -110,10 +110,6 @@ void laad_xhci(pci_class* xhci_device)
     //
     xhci_setup_eventring(session);
 
-    #ifdef XHCI_XHCI_TREAD
-    task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
-    #endif 
-
     // IMAN (0) = 0b10;
 	// IMOD (0) = 0;
     #ifdef ENABLE_XHCI_INTERUPTS
@@ -121,7 +117,6 @@ void laad_xhci(pci_class* xhci_device)
     #else 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
     #endif 
-    #ifndef XHCI_XHCI_TREAD
     sleep(10000);
     while(1){
         uint8_t rs = xhci_check_for_new_devs();
@@ -136,8 +131,12 @@ void laad_xhci(pci_class* xhci_device)
         }
         sleep(10000);
     }
+
+    yield();
+    #ifdef XHCI_XHCI_TREAD
+    task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
+    #else 
     xhci_keep_running = 1;
     event_watcher();
     #endif 
-    // printk("XHCI controller is klaar voor gebruik.\n");
 }

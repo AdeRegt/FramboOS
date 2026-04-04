@@ -9,8 +9,7 @@ void event_watcher()
         //
         // Controleer de Event Ring op nieuwe events
         //
-
-        sleep(1000);
+        sleep(100);
         xhci_check_event();
 
 #ifndef XHCI_XHCI_TREAD
