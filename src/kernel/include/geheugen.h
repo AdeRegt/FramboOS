@@ -208,3 +208,4 @@ void enable_syscall();
 void cpu_get_specific_registers(uint32_t msr, uint32_t *lo, uint32_t *hi);
 void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);
 void yield();
+uint32_t get_lapic_id();

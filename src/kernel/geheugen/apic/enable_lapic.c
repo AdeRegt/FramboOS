@@ -6,7 +6,7 @@ void enable_lapic()
     apic_base |= IA32_APIC_BASE_ENABLE;  // Set enable bit
     write_msr(IA32_APIC_BASE_MSR, apic_base);
 
-    LAPIC_REG(LAPIC_SVR) = 0x100 | 32; // Enable LAPIC and set spurious interrupt vector to 0xFF
+    LAPIC_REG(LAPIC_SVR) = 0x100 | 0xFF; // Enable LAPIC and set spurious interrupt vector to 0xFF
     // printk("LAPIC ingeschakeld op basisadres %x\n", (uint32_t)(apic_base & 0xFFFFF000));
     
     uint32_t id   = LAPIC_REG(0x20);  // LAPIC ID Register
@@ -25,4 +25,8 @@ void enable_lapic()
 
     // afloop instellen
     LAPIC_REG(0x380) = 0x100000; // initial count
+
+    LAPIC_REG(0x350) = 1 << 16; // mask LINT0
+    LAPIC_REG(0x360) = 1 << 16; // mask LINT1
+    LAPIC_REG(0x80) = 0;
 }

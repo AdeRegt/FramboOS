@@ -110,9 +110,9 @@ void laad_xhci(pci_class* xhci_device)
     //
     xhci_setup_eventring(session);
 
-    // IMAN (0) = 0b10;
-	// IMOD (0) = 0;
     #ifdef ENABLE_XHCI_INTERUPTS
+    IMAN (0) = 0b10;
+    IMOD (0) = 0;
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
     #else 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
@@ -132,6 +132,7 @@ void laad_xhci(pci_class* xhci_device)
         sleep(10000);
     }
 
+    #ifndef ENABLE_XHCI_INTERUPTS
     yield();
     #ifdef XHCI_XHCI_TREAD
     task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
@@ -139,4 +140,5 @@ void laad_xhci(pci_class* xhci_device)
     xhci_keep_running = 1;
     event_watcher();
     #endif 
+    #endif
 }

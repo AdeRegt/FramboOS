@@ -45,3 +45,4 @@ int pci_find_capability(pci_class* device, uint8_t cap_id);
 void set_pci_dword(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t value);
 void set_pci_word(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint16_t value);
 void pci_enable_busmastering(uint8_t bus, uint8_t slot, uint8_t func);
+uint8_t get_pci_byte(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset);

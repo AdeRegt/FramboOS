@@ -33,6 +33,9 @@ void xhci_check_event()
                 // Markeer dit event als verwerkt door de cycle bit te toggelen
                 wingD ^= 0x1;
                 event_ring[c*4 + 3] = wingD;
+                // Markeer in de eventring
+                ERDP_L(0) = (uint64_t)(uintptr_t)&event_ring[c*4];
+                ERDP_H(0) = 0;
             }
         }
     }
