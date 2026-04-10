@@ -6,7 +6,8 @@ void msd_read_sector(XHCIControllerSession *session, USBDevice* device,uint32_t 
     lba += msd->lba_offset;
 
     cbw* cb = create_scsi_command();
-    cb->dCBWDataTransferLength = 512;
+    cb->dCBWDataTransferLength = 512*length;
+    msd->datalength = 512*length;
     cb->bmCBWFlags = USB_DIR_IN;
     cb->bCBWCBLength = SCSI_CBW_LENGTH;
     cb->CBWCB[0] = SCSI_READ;

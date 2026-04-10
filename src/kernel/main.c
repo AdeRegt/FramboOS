@@ -36,7 +36,7 @@ void kernel_main(BootInfo *bootinfo)
     beeldscherm_leeg();
     printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
     uint8_t* g = bestand("FASM.BIN");
-    // for(int i = 0 ; i < 0x10 ; i++){printk("%c",g[i]);}
+    for(int i = 0 ; i < 0x10 ; i++){printk("%c",g[i]);}
 
     while (1)
     {

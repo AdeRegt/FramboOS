@@ -635,6 +635,7 @@ typedef struct{
     fat32_volume_boot_record* vbr;
     fat32_directory* root_directory;
     uint8_t loop_id;
+    uint64_t datalength;
     uint8_t target;
     uint32_t lba_offset;
     uint8_t file_load_is_ready;
