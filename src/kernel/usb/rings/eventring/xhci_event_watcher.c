@@ -20,5 +20,5 @@ void event_watcher()
 #else 
     goto again;
 #endif
-    printk("XHCI: system left loop\n");
+    // printk("XHCI: system left loop\n");
 }

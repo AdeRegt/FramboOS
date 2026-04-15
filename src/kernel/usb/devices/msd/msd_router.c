@@ -5,7 +5,7 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
     MassStorageDevice* msd = (MassStorageDevice*) device->attachment;
     if(msd->loop_id==1){
         void* data = alloc_page();
-        xhci_recieve_bulk(session,device,512,data);
+        xhci_recieve_bulk(session,device,msd->datalength,data);
         msd->loop_id=2;
         return;
     }
@@ -70,15 +70,9 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
         if(msd->loop_id==2){
             uint8_t* inc = (uint8_t*) (uint64_t)transfer_event->DataBufferPointerLo;
             msd->filebuffer = inc;
-            printk("done recieving file part\n");
-
-            #ifndef XHCI_XHCI_TREAD
-            xhci_keep_running = 0;
-            #endif 
-            return;
         }else if(msd->loop_id==3){
             msd->file_load_is_ready = 1;
-            printk("done loading file\n");
+            // printk("done loading file\n");
 
             #ifndef XHCI_XHCI_TREAD
             xhci_keep_running = 0;

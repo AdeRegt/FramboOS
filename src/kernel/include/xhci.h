@@ -208,6 +208,7 @@
 #define SCSI_INQUIRY 0x12 
 #define SCSI_INQUIRY_LENGTH 36 
 #define SCSI_READ 0x28 
+#define SCSI_SECTOR_SIZE 512
 
 typedef struct {
     uint32_t dCSWSignature;   // 0x53425355 ("USBS" little-endian)
@@ -553,6 +554,7 @@ typedef struct {
     uint8_t command_ring_index;
     XHCIEventRingSegmentTable* xhci_event_ring_segment_table;
     uint32_t* xhci_event_ring;
+    uint8_t xhci_event_ring_cycle_state;
     USBDevice devices[5];
     uint8_t max_ports;
 }__attribute__((packed)) XHCIControllerSession;

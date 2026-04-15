@@ -2,7 +2,7 @@
 
 INTERRUPT xhci_interrupt_handler(interrupt_frame *frame)
 {
-    // printk("XHCI Interrupt fired!\n");
+    printk("XHCI Interrupt fired!\n");
     for(int i = 0 ; i < xhci_session_count ; i++)
     {
         XHCIControllerSession* session = &xhci_session[i];
