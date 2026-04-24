@@ -55,6 +55,7 @@
 #define SYSCALL_REG_STAR 0xC0000081
 #define SYSCALL_REG_LSTAR 0xC0000082
 #define SYSCALL_REG_CSTAR 0xC0000083
+#define SYSCALL_REG_MASK 0xC0000084
 #define IA32_EFER 0xC0000080
 
 typedef struct{
@@ -122,6 +123,58 @@ typedef struct {
     char name[32];
 } task_t;
 
+// GDT Entry structuur (8 bytes)
+typedef struct {
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t  base_middle;
+    uint8_t  access;
+    uint8_t  granularity;
+    uint8_t  base_high;
+} __attribute__((packed)) GDTEntry;
+
+// TSS Descriptor voor 64-bit (16 bytes)
+typedef struct {
+    GDTEntry common;
+    uint32_t base_upper32;
+    uint32_t reserved;
+} __attribute__((packed)) TSSEntry;
+
+// De TSS Structuur zelf (104 bytes)
+typedef struct {
+    uint32_t reserved0;
+    uint64_t rsp0; // Stack pointer voor Ring 0
+    uint64_t rsp1;
+    uint64_t rsp2;
+    uint64_t reserved1;
+    uint64_t ist1; // Interrupt Stack Table
+    uint64_t ist2;
+    uint64_t ist3;
+    uint64_t ist4;
+    uint64_t ist5;
+    uint64_t ist6;
+    uint64_t ist7;
+    uint64_t reserved2;
+    uint16_t reserved3;
+    uint16_t iopb_offset;
+} __attribute__((packed)) TSS;
+
+// De volledige GDT tabel
+typedef struct {
+    GDTEntry null;          // 0x00
+    GDTEntry kernel_code;   // 0x08
+    GDTEntry kernel_data;   // 0x10
+    GDTEntry user_data;     // 0x18
+    GDTEntry user_code;     // 0x20
+    TSSEntry tss;           // 0x28 (neemt 16 bytes in beslag!)
+} __attribute__((packed)) __attribute__((aligned(0x1000))) GDT;
+
+// Het pointer-object voor het LGDT instructie
+typedef struct {
+    uint16_t limit;
+    uint64_t base;
+} __attribute__((packed)) GDTPointer;
+
 extern void _KernelStart();
 extern void _KernelEnd();
 extern MemoryDescriptor *paging_geheugen_blok;
@@ -171,6 +224,8 @@ extern task_t ct[10];
 extern int current_task;
 extern int max_task;
 extern void syscallentrypoint();
+extern GDT gdt;
+extern TSS tss;
 
 void laad_geheugen(BootInfo *memory_info);
 char* geheugen_geheugenblok_type_naar_string(uint32_t type);
@@ -209,3 +264,4 @@ void cpu_get_specific_registers(uint32_t msr, uint32_t *lo, uint32_t *hi);
 void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);
 void yield();
 uint32_t get_lapic_id();
+void write_tss(TSSEntry* entry, uint64_t tss_addr);

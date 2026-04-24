@@ -4,3 +4,6 @@
 [submodule "src/programs/fasm/source"]
 	path = src/programs/fasm/source
 	url = https://github.com/tgrysztar/fasm.git
+[submodule "src/programs/shell"]
+	path = src/programs/shell
+	url = git@github.com:AdeRegt/simpleshell.git

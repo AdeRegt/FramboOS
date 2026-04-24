@@ -9,4 +9,6 @@ void beeldscherm_leeg()
       beeldscherm_plaats_pixel(x, y, BEELDSCHERM_ACHTERGROND_KLEUR);
     }
   }
+  beeldscherm_x = BEELDSCHERM_OFFSET_X;
+  beeldscherm_y = BEELDSCHERM_OFFSET_Y;
 }

@@ -20,5 +20,5 @@ void enable_syscall(){
 
     alpha = 0x2002;
     beta = 0;
-    cpu_set_specific_registers(0xC0000084,alpha,beta);
+    cpu_set_specific_registers(SYSCALL_REG_MASK,alpha,beta);
 }

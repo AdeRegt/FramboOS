@@ -17,4 +17,6 @@ uint64_t syscall_r13;
 uint64_t syscall_r14;
 uint64_t syscall_r15;
 
-void syscallprobe(){}
+void syscallprobe(){
+    printk("__HALT__");for(;;);
+}

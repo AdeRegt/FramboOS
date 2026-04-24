@@ -47,7 +47,36 @@ void laad_geheugen(BootInfo *meme)
     printk("De kernel begint op %lx en eindigd op %lx en beslaat dus %lx \n",_KernelStart, _KernelEnd, (_KernelEnd - _KernelStart));
     
     #ifdef ENABLE_GDT 
-    initialise_gdt();
+    // Null descriptor
+    gdt.null = (GDTEntry){0, 0, 0, 0, 0, 0};
+
+    // Kernel Code: Access 0x9A, Flags 0x20 (L-bit voor 64-bit)
+    gdt.kernel_code = (GDTEntry){0, 0, 0, 0x9A, 0x20, 0};
+    
+    // Kernel Data: Access 0x92
+    gdt.kernel_data = (GDTEntry){0, 0, 0, 0x92, 0, 0};
+
+    // User Data: Access 0xF2
+    gdt.user_data = (GDTEntry){0, 0, 0, 0xF2, 0, 0};
+
+    // User Code: Access 0xFA, Flags 0x20
+    gdt.user_code = (GDTEntry){0, 0, 0, 0xFA, 0x20, 0};
+
+    // TSS initialisatie (leegmaken)
+    for(unsigned long i = 0; i < sizeof(TSS); i++) ((uint8_t*)&tss)[i] = 0;
+    tss.iopb_offset = sizeof(TSS);
+    
+    write_tss(&gdt.tss, (uint64_t)&tss);
+
+    GDTPointer gdt_ptr;
+    gdt_ptr.limit = sizeof(gdt) - 1;
+    gdt_ptr.base = (uint64_t)&gdt;
+
+    extern void flush_gdt(GDTPointer* ptr);
+    flush_gdt(&gdt_ptr);
+    
+    // Laad de TSS selector (0x28)
+    asm volatile("ltr %%ax" : : "a"(0x28));
     #else 
     printk("waarschuwing: GDT is uitgeschakeld.\n");
     #endif 

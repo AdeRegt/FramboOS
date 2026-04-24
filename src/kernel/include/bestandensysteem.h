@@ -8,3 +8,4 @@ void bs_regristreer(void* fsdata);
 void bs_leeg();
 void* bestand(uint8_t* path);
 uint8_t* directory();
+extern int execvp (const char *file, char *const argv[]);
