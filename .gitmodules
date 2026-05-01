@@ -1,9 +1,6 @@
 [submodule "src/bootloader"]
 	path = src/bootloader
 	url = git@github.com:AdeRegt/EFIBootloader.git
-[submodule "src/programs/fasm/source"]
-	path = src/programs/fasm/source
-	url = https://github.com/tgrysztar/fasm.git
-[submodule "src/programs/shell"]
-	path = src/programs/shell
-	url = git@github.com:AdeRegt/simpleshell.git
+[submodule "src/lua/origin"]
+	path = src/lua/origin
+	url = https://github.com/lua/lua.git

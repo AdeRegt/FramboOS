@@ -1,6 +1,10 @@
 #include "bootloader.h"
 #include "debugger.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <stdarg.h>
+
 #define MEMORY_TYPE_RESERVED 0
 #define MEMORY_TYPE_LOADER_CODE 1
 #define MEMORY_TYPE_LOADER_DATA 2
@@ -235,7 +239,7 @@ void map_memory(void* pml4mem, void *virtualmemory,void* physicalmemory);
 void define_linear_memory_block(void *address);
 void define_page_memory_range_from_memory_descriptor(MemoryDescriptor *desc);
 void* alloc_page();
-void *memset(void *s, char val, uint64_t count);
+void* memset(void* s, int c, uint64_t n);
 MemoryDescriptor* geheugenblok_van_address(uint64_t address);
 void outportb(uint16_t port, uint8_t value);
 uint8_t inportb(uint16_t port);
@@ -255,7 +259,7 @@ void write_msr(uint32_t msr, uint64_t value);
 uint8_t get_active_int();
 void taskswitchstub();
 void scheduler_tick();
-void memcpy(void* dest, const void* src, uint64_t n);
+void* memcpy(void* restrict dest, const void* restrict src, size_t n);
 void task_create(char* name, void (*func)());
 void timersleep(uint64_t secs);
 void hlt();
@@ -265,3 +269,17 @@ void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);
 void yield();
 uint32_t get_lapic_id();
 void write_tss(TSSEntry* entry, uint64_t tss_addr);
+size_t strlen(const char* s);
+char* strstr(const char* h, const char* n);
+int memcmp(const void* s1, const void* s2, size_t n);
+void free(void* ptr);
+void abort(void);
+long time(long* t);
+int strcmp(const char* s1, const char* s2);
+int strncmp(const char* s1, const char* s2, size_t n);
+char* strchr(const char* s, int c);
+long long kernel_atoll(const char* s);
+long long pow(long long b, long long e);
+long long fmod(long long x, long long y);
+int abs(int j);
+size_t strspn(const char* s, const char* a);

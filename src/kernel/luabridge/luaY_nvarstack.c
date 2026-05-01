@@ -1,0 +1,1 @@
+void luaY_nvarstack(void) {}

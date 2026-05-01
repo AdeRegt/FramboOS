@@ -1,0 +1,1 @@
+long long pow(long long b, long long e) { return 0; }

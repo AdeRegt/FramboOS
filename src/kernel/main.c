@@ -2,6 +2,7 @@
 #include "beeldscherm.h"
 #include "pci.h"
 #include "bestandensysteem.h"
+#include "lua_kernel.h"
 
 void kernel_main(BootInfo *bootinfo)
 {
@@ -35,8 +36,20 @@ void kernel_main(BootInfo *bootinfo)
     wachten_op_bestandssysteem();
     beeldscherm_leeg();
     printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
-    char *eargs[] = {0};
-    execvp("SHELL.BIN",eargs);
+    
+    lua_State *L = lua_kernel_init();
+    if (L == NULL) {
+        printk("ERROR: Failed to initialize Lua!\n");
+    } else {
+        printk("Lua initialized successfully\n");
+        
+        /* Test Lua: execute a simple string */
+        const char *test_code = "kernel.print('Hello from Lua!')";
+        if (lua_kernel_dostring(test_code) != 0) {
+            printk("Lua error: %s\n", lua_tostring(L, -1));
+            lua_pop(L, 1);
+        }
+    }
 
     while (1)
     {

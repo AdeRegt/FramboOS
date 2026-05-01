@@ -25,9 +25,6 @@ lgdt [rdi]
 
 %include "geheugen/task/taskswitchstub.asm"
 
-section .bss
-
-[global syscallentrypoint]
 [extern syscallprobe]
 [extern syscall_rax]
 [extern syscall_rbx]
@@ -45,6 +42,10 @@ section .bss
 [extern syscall_r13]
 [extern syscall_r14]
 [extern syscall_r15]
+
+section .text
+
+[global syscallentrypoint]
 
 syscallentrypoint:
     mov qword [syscall_rax],rax

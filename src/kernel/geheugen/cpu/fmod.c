@@ -1,0 +1,1 @@
+long long fmod(long long x, long long y) { return 0; }

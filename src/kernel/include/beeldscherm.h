@@ -1,13 +1,6 @@
 #include "bootloader.h"
 #include "debugger.h"
 
-typedef __builtin_va_list va_list;
-
-#define va_start(a,b)  __builtin_va_start(a,b)
-#define va_end(a)      __builtin_va_end(a)
-#define va_arg(a,b)    __builtin_va_arg(a,b)
-#define __va_copy(d,s) __builtin_va_copy((d),(s))
-
 #define BEELDSCHERM_OFFSET_X 5 
 #define BEELDSCHERM_OFFSET_Y 5
 
@@ -63,3 +56,6 @@ void drawCharacter(PSF1_Font *font,char character,unsigned int colour,unsigned l
 PSF1_Font *getDefaultFont();
 char *getDefaultPSFFontBuffer();
 void drawCharacterInDefaultFont(char character, unsigned int colour, unsigned long x, unsigned long y, uint8_t shadow);
+int l_sprintf(char* d, size_t sz, const char* f, ...);
+int fprintf(void* f, const char* fmt, ...);
+int sprintf(char* d, const char* f, ...);
