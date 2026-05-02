@@ -23,6 +23,20 @@ void kernel_main(BootInfo *bootinfo)
     // Syscall instructie aanmelden
     enable_syscall();
 
+    lua_State *L = lua_kernel_init();
+    if (L == NULL) {
+        printk("ERROR: Failed to initialize Lua!\n");
+    } else {
+        printk("Lua initialized successfully\n");
+        
+        /* Test Lua: execute a simple string */
+        const char *test_code = "kprint('Hello from Lua!')";
+        if (lua_kernel_dostring(test_code) != 0) {
+            printk("Lua error: %s\n", lua_tostring(L, -1));
+            lua_pop(L, 1);
+        }
+    }for(;;);
+
     //
     // PCI apparaten initialiseren
     laad_pci();
@@ -37,19 +51,6 @@ void kernel_main(BootInfo *bootinfo)
     beeldscherm_leeg();
     printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
     
-    lua_State *L = lua_kernel_init();
-    if (L == NULL) {
-        printk("ERROR: Failed to initialize Lua!\n");
-    } else {
-        printk("Lua initialized successfully\n");
-        
-        /* Test Lua: execute a simple string */
-        const char *test_code = "kernel.print('Hello from Lua!')";
-        if (lua_kernel_dostring(test_code) != 0) {
-            printk("Lua error: %s\n", lua_tostring(L, -1));
-            lua_pop(L, 1);
-        }
-    }
 
     while (1)
     {

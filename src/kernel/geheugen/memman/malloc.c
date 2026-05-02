@@ -11,15 +11,17 @@ typedef struct {
 
 #define HEADER_SIZE sizeof(AllocationHeader)
 
-static uint64_t alloc_ptr = 0;
-static uint64_t alloc_end = 0;
+static uint64_t region_start = (uint64_t)-1;   /* Start of memory region (sentinel: -1 = not initialized) */
+static uint64_t region_end = 0;                /* End of memory region */
+static uint64_t watermark = 0;                 /* High water mark of allocated memory */
 
 /* Initialize allocator at first call */
 static void init_allocator(void) {
-    if (alloc_ptr == 0 && allocatie_geheugen_blok != NULL) {
-        alloc_ptr = allocatie_geheugen_blok->PhysicalStart;
-        alloc_end = allocatie_geheugen_blok->PhysicalStart + 
-                   (allocatie_geheugen_blok->NumberOfPages * MEMORY_PAGE_SIZE);
+    if (region_start == (uint64_t)-1 && allocatie_geheugen_blok != NULL) {
+        region_start = allocatie_geheugen_blok->PhysicalStart;
+        region_end = allocatie_geheugen_blok->PhysicalStart + 
+                     (allocatie_geheugen_blok->NumberOfPages * MEMORY_PAGE_SIZE);
+        watermark = region_start;
     }
 }
 
@@ -28,35 +30,69 @@ void* malloc(size_t size) {
     
     init_allocator();
     
-    if (alloc_ptr == 0) {
+    if (region_start == (uint64_t)-1) {
+        printk("MALLOC ERROR: allocator not initialized\n");
         return NULL;  /* Allocator not initialized */
     }
     
-    /* First-fit: search for free block */
-    uint64_t current = alloc_ptr;
+    printk("malloc(%x) called\n", (uint64_t)size);
     
-    while (current < alloc_end) {
+    /* First-fit: search for previously freed blocks */
+    uint64_t current = region_start;
+    int iterations = 0;
+    const int MAX_ITERATIONS = 100000;  /* Safety limit */
+    
+    while (current < watermark) {
+        if (iterations++ > MAX_ITERATIONS) {
+            printk("MALLOC ERROR: loop exceeded iterations\n");
+            return NULL;
+        }
+        
         AllocationHeader *hdr = (AllocationHeader*)current;
         
+        /* Sanity check on header */
+        if (hdr->size == 0 || hdr->size > (region_end - current - HEADER_SIZE)) {
+            printk("MALLOC ERROR: corrupt header at %x\n", current);
+            return NULL;
+        }
+        
+        /* Check if block is marked as free and large enough */
         if (hdr->free && hdr->size >= size) {
-            /* Found suitable block, mark as used and return */
+            /* Reuse this block */
             hdr->free = 0;
-            return (void*)(current + HEADER_SIZE);
+            
+            /* If block is much larger than needed, split it */
+            if (hdr->size > size + HEADER_SIZE) {
+                uint64_t remainder_addr = current + HEADER_SIZE + size;
+                AllocationHeader *remainder_hdr = (AllocationHeader*)remainder_addr;
+                remainder_hdr->size = hdr->size - size - HEADER_SIZE;
+                remainder_hdr->free = 1;
+                hdr->size = size;
+            }
+            
+            uint64_t result = current + HEADER_SIZE;
+            printk("malloc(%x) -> %x (reused)\n", (uint64_t)size, result);
+            return (void*)result;
         }
         
         current += HEADER_SIZE + hdr->size;
     }
     
-    /* No free block found, allocate new memory if space available */
-    if (current + HEADER_SIZE + size <= alloc_end) {
-        AllocationHeader *hdr = (AllocationHeader*)current;
-        hdr->size = size;
-        hdr->free = 0;
-        alloc_ptr = current + HEADER_SIZE + size;
-        return (void*)(current + HEADER_SIZE);
+    /* Allocate new memory at watermark */
+    if (watermark + HEADER_SIZE + size > region_end) {
+        printk("MALLOC ERROR: out of memory\n");
+        return NULL;  /* Out of memory */
     }
     
-    return NULL;  /* Out of memory */
+    AllocationHeader *hdr = (AllocationHeader*)watermark;
+    hdr->size = size;
+    hdr->free = 0;
+    
+    uint64_t result = watermark + HEADER_SIZE;
+    watermark += HEADER_SIZE + size;
+    
+    printk("malloc(%x) -> %x (new)\n", (uint64_t)size, result);
+    return (void*)result;
 }
 
 void* calloc(size_t nmemb, size_t size) {
