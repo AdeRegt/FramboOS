@@ -7,3 +7,6 @@
 [submodule "src/programs/shell"]
 	path = src/programs/shell
 	url = git@github.com:AdeRegt/simpleshell.git
+[submodule "src/lua/origin"]
+	path = src/lua/origin
+	url = https://github.com/lua/lua.git
