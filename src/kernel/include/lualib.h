@@ -78,3 +78,39 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
  * uit karakters die voorkomen in de string accept.
  */
 size_t strspn(const char *s, const char *accept);
+
+/**
+ * Kopieert de string 'src' (inclusief de null-terminator) naar 'dest'.
+ * De buffer 'dest' moet groot genoeg zijn.
+ * Retourneert de pointer naar 'dest'.
+ */
+char *strcpy(char *dest, const char *src);
+
+/**
+ * Zoekt in string s naar de eerste verschijning van een van de
+ * karakters in de string accept.
+ * Retourneert een pointer naar het gevonden karakter in s,
+ * of NULL als er geen match is gevonden.
+ */
+char *strpbrk(const char *s, const char *accept);
+
+/**
+ * Converteert de string 'nptr' naar een long long integer.
+ * 'endptr' wordt gezet op het eerste karakter na het getal.
+ * 'base' is het talstelsel (2 tot 36, of 0 voor automatische detectie).
+ */
+long long strtoll(const char *nptr, char **endptr, int base);
+#ifndef _SETJMP_H
+#define _SETJMP_H
+
+// Een array van 8 long longs is genoeg voor x86_64
+typedef unsigned long long jmp_buf[8];
+
+int _setjmp(jmp_buf env);
+void _longjmp(jmp_buf env, int val);
+
+// Lua zoekt vaak naar setjmp/longjmp zonder underscore
+#define setjmp(env) _setjmp(env)
+#define longjmp(env, val) _longjmp(env, val)
+
+#endif

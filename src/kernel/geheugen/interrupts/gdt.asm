@@ -46,6 +46,52 @@ section .bss
 [extern syscall_r14]
 [extern syscall_r15]
 
+global _setjmp
+global _longjmp
+
+section .text
+
+; int _setjmp(jmp_buf env)
+; rdi = adres van de buffer (eerste argument in x86_64 ABI)
+_setjmp:
+    mov [rdi + 0],  rbx
+    mov [rdi + 8],  rbp
+    mov [rdi + 16], r12
+    mov [rdi + 24], r13
+    mov [rdi + 32], r14
+    mov [rdi + 40], r15
+    
+    ; Sla de stack pointer op zoals die was vóór de call
+    lea rdx, [rsp + 8]
+    mov [rdi + 48], rdx
+    
+    ; Sla het return adres op (staat bovenop de stack)
+    mov rdx, [rsp]
+    mov [rdi + 56], rdx
+
+    xor eax, eax    ; return 0
+    ret
+
+; void _longjmp(jmp_buf env, int val)
+; rdi = adres van de buffer
+; rsi = de waarde die setjmp moet teruggeven
+_longjmp:
+    mov rbx, [rdi + 0]
+    mov rbp, [rdi + 8]
+    mov r12, [rdi + 16]
+    mov r13, [rdi + 24]
+    mov r14, [rdi + 40]
+    mov r15, [rdi + 48]
+    mov rsp, [rdi + 48] ; herstel stack pointer
+    
+    mov rax, rsi        ; zet de return waarde (val)
+    test eax, eax
+    jnz .skip_zero
+    inc eax             ; de standaard zegt: als val 0 is, maak er 1 van
+.skip_zero:
+
+    jmp [rdi + 56]      ; spring terug naar het opgeslagen adres
+    
 syscallentrypoint:
     mov qword [syscall_rax],rax
     mov qword [syscall_rbx],rbx
