@@ -151,5 +151,6 @@ static inline long long l_stub_ldexp(long long a, int e) { return a; }
 #define LUAL_BUFFERSIZE        512
 
 #include <setjmp.h>
-
+void printk(char *format, ...);
+#define lua_writestring(s,l)   printk(s,l)
 #endif

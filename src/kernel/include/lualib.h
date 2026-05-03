@@ -136,3 +136,14 @@ long labs(long j);
  * Retourneert de absolute waarde van een long long integer (64-bit).
  */
 long long llabs(long long j);
+
+/**
+ * Converteert een kleine letter naar een hoofdletter.
+ * Als het karakter geen kleine letter is, wordt het ongewijzigd geretourneerd.
+ */
+int toupper(int c);
+
+/**
+ * De tegenhanger (vaak ook nodig voor Lua).
+ */
+int tolower(int c);
