@@ -106,11 +106,33 @@ long long strtoll(const char *nptr, char **endptr, int base);
 // Een array van 8 long longs is genoeg voor x86_64
 typedef unsigned long long jmp_buf[8];
 
-int _setjmp(jmp_buf env);
-void _longjmp(jmp_buf env, int val);
+extern int _setjmp(jmp_buf env);
+extern void _longjmp(jmp_buf env, int val);
 
 // Lua zoekt vaak naar setjmp/longjmp zonder underscore
 #define setjmp(env) _setjmp(env)
 #define longjmp(env, val) _longjmp(env, val)
 
 #endif
+
+/**
+ * Veroorzaakt een abnormale programma-beëindiging.
+ * Deze functie keert nooit terug naar de aanroeper.
+ */
+void abort(void) __attribute__((__noreturn__));
+
+
+/**
+ * Retourneert de absolute waarde van een integer.
+ */
+int abs(int j);
+
+/**
+ * Retourneert de absolute waarde van een long integer.
+ */
+long labs(long j);
+
+/**
+ * Retourneert de absolute waarde van een long long integer (64-bit).
+ */
+long long llabs(long long j);
