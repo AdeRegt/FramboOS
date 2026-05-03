@@ -33,7 +33,7 @@ lua_State* lua_kernel_init(void)
     
     printk("DEBUG: about to lua_newstate\n");
     /* Create new Lua state with kernel allocator */
-    kernel_lua_state = lua_newstate(lua_alloc, NULL, 0);
+    kernel_lua_state = luaL_newstate();
     printk("DEBUG: lua_newstate returned %x\n", (uint64_t)kernel_lua_state);
     if (kernel_lua_state == NULL) {
         printk("ERROR: lua_newstate failed\n");

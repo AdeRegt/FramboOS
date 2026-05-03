@@ -1,57 +1,56 @@
-/*
-** $Id: luaconf.h $
-** Configuration file for Lua - KERNEL MODIFIED (Integer Only)
-** Geoptimaliseerd voor een freestanding x86_64 kernel omgeving.
-*/
-
 #ifndef luaconf_h
 #define luaconf_h
 
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /* 
-** ===================================================================
-** Systeem Configuratie
-** ===================================================================
+** Voorkom dat math.h van het systeem geladen wordt. 
 */
-
-#if !defined(LUA_ANSI)
-#define LUA_ANSI
+#ifndef _MATH_H
+#define _MATH_H
 #endif
-
-
-/* Prototypes voor kernel stubs */
-extern long long kernel_atoll(const char *s);
-extern int sprintf(char *str, const char *format, ...);
-
-/* Controleer of int minstens 32 bits is */
-#define LUAI_IS32INT    ((UINT_MAX >> 30) >= 3)
 
 /*
 ** ===================================================================
-** Numerieke Types (Integer-Only Modus)
+** SYSTEM CONFIGURATION
 ** ===================================================================
 */
 
-#define LUA_INT_INT         1
-#define LUA_INT_LONG        2
-#define LUA_INT_LONGLONG    3
+#ifndef LUA_USE_C89
+#define LUA_USE_C89
+#endif
 
-#define LUA_FLOAT_FLOAT     1
-#define LUA_FLOAT_DOUBLE    2
-#define LUA_FLOAT_LONGDOUBLE 3
+#undef LUA_USE_LINUX
+#undef LUA_USE_WINDOWS
+#undef LUA_USE_POSIX
 
-/* Gebruik 64-bit integers voor alles */
-#define LUA_INT_TYPE    LUA_INT_LONGLONG
-#define LUA_FLOAT_TYPE  LUA_INT_LONGLONG 
+#define l_likely(x) (__builtin_expect(((x) != 0), 1))
+#define l_unlikely(x)   (__builtin_expect(((x) != 0), 0))
+#define luai_likely(x)  l_likely(x)
+#define luai_unlikely(x) l_unlikely(x)
 
-/* De basis types */
-#define LUA_NUMBER      long long
+#define LUA_API    extern
+#define LUALIB_API LUA_API
+#define LUAMOD_API LUA_API
+#define LUAI_FUNC  extern
+#define LUAI_DDEC(dec)  LUAI_FUNC dec
+#define LUAI_DDEF  /* empty */
+
+/*
+** ===================================================================
+** NUMBER TYPES (64-bit Integer Only)
+** ===================================================================
+*/
+
+#define LUA_INT_TYPE    3 /* LUA_INT_LONGLONG */
+#define LUA_FLOAT_TYPE  1 /* LUA_FLOAT_FLOAT (faked met integers) */
+
 #define LUA_INTEGER     long long
 #define LUA_UNSIGNED    unsigned long long
+#define LUA_NUMBER      long long
 
-/* CRUCIAAL: Definieer de 'Unpromoted' types voor de VM */
 #define LUAI_UACNUMBER  long long
 #define LUAI_UACINT     long long
 
@@ -59,131 +58,98 @@ extern int sprintf(char *str, const char *format, ...);
 #define LUA_MININTEGER  LLONG_MIN
 #define LUA_MAXUNSIGNED ULLONG_MAX
 
+#define LUA_INTEGER_FMT "%lld"
+#define LUA_NUMBER_FMT  "%lld"
+
+/*
+** ===================================================================
+** MATH STUBS & SSE-SAFE l_mathop
+** ===================================================================
+*/
+
+/* Inline stubs voor kernel-omgeving */
+static inline long long l_stub_pow(long long a, long long b) {
+    long long res = 1;
+    if (b < 0) return 0;
+    while (b > 0) {
+        if (b & 1) res *= a;
+        a *= a; b >>= 1;
+    }
+    return res;
+}
+static inline long long l_stub_fmod(long long a, long long b) { return (b != 0) ? (a % b) : 0; }
+static inline long long l_stub_frexp(long long a, int *e) { *e = 0; return a; }
+static inline long long l_stub_ldexp(long long a, int e) { return a; }
+
+/* Omleiden van standaardnamen */
+#define pow     l_stub_pow
+#define fmod    l_stub_fmod
+#define frexp   l_stub_frexp
+#define ldexp   l_stub_ldexp
+
 /* 
-** ===================================================================
-** Low-level Conversie & Math Macros
-** ===================================================================
+** SSE-FIX: 
+** Gebruik GCC/Clang built-ins om te voorkomen dat 'double' constanten 
+** eindigen in SSE-registers (verboden in kernel-mode).
 */
+#if defined(__GNUC__) || defined(__clang__)
+  #define l_mathop(x) \
+    __builtin_choose_expr(__builtin_types_compatible_p(__typeof__(x), double), \
+    ((long long)(x)), (x))
+#else
+  #define l_mathop(x) (x)
+#endif
 
-#define LUA_INTEGER_FRMLEN  "ll"
-#define LUA_INTEGER_FMT     "%" LUA_INTEGER_FRMLEN "d"
-#define LUA_NUMBER_FRMLEN   "ll"
-#define LUA_NUMBER_FMT      "%lld"
-#define LUA_NUMBER_FMT_N    "%lld"
+#define l_floor(x)      (x)
+#define l_ceil(x)       (x)
 
-#define l_mathop(op)        op
-#define l_floor(x)          (x)
-#define l_floatatt(n)       (0)
+#undef HUGE_VAL
+#define HUGE_VAL        ((long long)0x7FFFFFFFFFFFFFFFLL)
+#define l_mathlim(n)    LLONG_MAX
+#define MANT_DIG        0
+#define MAX_10_EXP      0
+#define l_floatatt(a)   (0)
 
-#define lua_str2number(s,p)     ((void)p, kernel_atoll(s))
-#define lua_strx2number(s,p)    ((void)p, kernel_atoll(s))
-
-#define lua_integer2str(s,sz,n) sprintf((s), LUA_INTEGER_FMT, (long long)(n))
-#define lua_number2str(s,sz,n)  sprintf((s), LUA_NUMBER_FMT, (long long)(n))
-
-#define lua_getlocaledecpoint() ('.')
+/* String conversies */
+#define lua_number2str(s,sz,n)  l_sprintf((s), sz, LUA_NUMBER_FMT, (n))
+#define lua_integer2str(s,sz,n) l_sprintf((s), sz, LUA_INTEGER_FMT, (n))
+#define lua_pointer2str(s,sz,p) l_sprintf((s), sz, "%p", (p))
+#define lua_numbertointeger(n,p) (*(p) = (LUA_INTEGER)(n), 1)
+#define lua_str2number(s,p)    strtoll((s), (p), 10)
 
 /*
 ** ===================================================================
-** Pad & Export Instellingen
-** ===================================================================
-*/
-
-#define LUA_PATH_SEP            ";"
-#define LUA_PATH_MARK           "?"
-#define LUA_EXEC_DIR            "!"
-#define LUA_PATH_DEFAULT        ""
-#define LUA_CPATH_DEFAULT       ""
-#define LUA_DIRSEP              "/"
-
-#define LUA_API     extern
-#define LUALIB_API  LUA_API
-#define LUAMOD_API  LUA_API
-
-/*
-** ===================================================================
-** Interne VM Instellingen
+** CONTEXT, EXTRASPACE & PATHS
 ** ===================================================================
 */
 
 #define LUA_KCONTEXT    ptrdiff_t
+#define LUA_EXTRASPACE  (sizeof(void *))
 
-#define LUA_EXTRASPACE      (sizeof(void *))
-#define LUA_IDSIZE          60
-#define LUAL_BUFFERSIZE     1024
+#define LUA_PATH_SEP    ";"
+#define LUA_PATH_MARK   "?"
+#define LUA_DIRSEP      "/"
+#define LUA_IGMARK      "-"
+#define LUA_EXEC_DIR    "!"
+#define LUA_PATH_DEFAULT  ""
+#define LUA_CPATH_DEFAULT ""
 
-/* Alignment voor de VM */
-#define LUAI_MAXALIGN       void *s; long long l
-
-#if !defined(luai_likely)
-#define luai_likely(x)      (x)
-#define luai_unlikely(x)    (x)
-#endif
-/* 
-** KERNEL MOD: Fix voor implicit declarations van sprintf-gerelateerde functies
-*/
-
-/* Zorg dat l_sprintf bekend is voor lobject.c */
-#if !defined(l_sprintf)
-  #define l_sprintf(s,sz,f,i) sprintf(s,f,i)
-#endif
-
-/* Zorg dat lua_pointer2str bekend is voor lobject.c */
-#if !defined(lua_pointer2str)
-  #define lua_pointer2str(buff,sz,p) sprintf(buff, "%p", p)
-#endif
-
-/* 
-** KERNEL MOD: Fix voor Continuation Context 
-*/
-#define LUA_KCONTEXT    ptrdiff_t/* 
-** KERNEL MOD: Schakel OS en I/O afhankelijkheden volledig uit
-*/
-
-/* Voorkom dat Lua 'tmpnam' of 'system' gebruikt */
-#undef LUA_USE_POSIX
-#undef LUA_USE_WINDOWS
-
-/* Forceer Lua om GEEN gebruik te maken van de standaard C streams */
-#define LUA_NOCVTN2S
-#define LUA_NOCVTS2N
-
-/* 
-** Definieer deze macro's als 'leeg' of 'fout' om te voorkomen dat 
-** lbaselib.c of liolib.c functies zoals fopen gebruiken.
-*/
-#define lua_stdin_is_tty()	0
-#define lua_readline(L,b,p)	((void)L, (void)b, (void)p, 0)
-#define lua_saveline(L,line)	((void)L, (void)line)
-#define lua_freeline(L,b)	((void)L, (void)b)/*
+/*
 ** ===================================================================
-** KERNEL SPECIFIC OVERRIDES
+** FREESTANDING STUBS
 ** ===================================================================
 */
 
-/* 1. Schakel File I/O functies in de core uit */
+#define lua_getlocaledecpoint() ('.')
+#define l_sprintf(s,sz,f,i)    snprintf(s,sz,f,i)
 
-/* 2. Zorg dat l_sprintf en andere macros geen externe headers nodig hebben */
-#if !defined(l_sprintf)
-  #define l_sprintf(s,sz,f,i) sprintf(s,f,i)
+#define LUAI_MAXALIGN          \
+  union { LUA_INTEGER i; void *s; long l; }
+
+#define LUAI_MAXSTACK          15000
+#define LUA_IDSIZE             60
+#define LUAL_BUFFERSIZE        512
+
+#include <setjmp.h>
+
 #endif
-
-#if !defined(lua_pointer2str)
-  #define lua_pointer2str(buff,sz,p) sprintf(buff, "%p", p)
-#endif
-
-/* 3. Voorkom dat Lua standaard C streams gebruikt (stdin/stdout) */
-#define lua_stdin_is_tty()	0
-#define lua_stdout_is_tty()	0
-
-/* 4. Verwijder afhankelijkheden van os.exit, os.system, etc. */
-/* Dit zorgt dat de linker niet meer naar 'system' of 'exit' vraagt */
-#define l_oslib			/* leeg */
-
-/* 5. Continuation context type (moest er ook nog bij) */
-#if !defined(LUA_KCONTEXT)
-  #define LUA_KCONTEXT	ptrdiff_t
-#endif
-
-
-#endif /* luaconf_h */

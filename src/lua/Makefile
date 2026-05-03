@@ -15,7 +15,7 @@ CORE_SRC = lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c \
            ltm.c lundump.c lvm.c lzio.c
 
 # Minimal libraries: just base lib
-LIB_SRC  = lauxlib.c lbaselib.c
+LIB_SRC  = lbaselib.c
 
 OBJS = $(addprefix $(SRC_DIR)/, $(CORE_SRC:.c=.o) $(LIB_SRC:.c=.o))
 
