@@ -26,7 +26,12 @@ uint64_t _contextES;
 uint64_t _contextDS;
 uint64_t _contextCPL;
 
+unsigned long long system_ticks = 0;
+
 void scheduler_tick() {
+
+    system_ticks++;
+
     ct[current_task].context.rip = _contextRIP;
     ct[current_task].context.cs = _contextCS;
     ct[current_task].context.rflags = _contextRFLAGS;
