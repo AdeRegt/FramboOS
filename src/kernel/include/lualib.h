@@ -147,3 +147,20 @@ int toupper(int c);
  * De tegenhanger (vaak ook nodig voor Lua).
  */
 int tolower(int c);
+
+/**
+ * Vergelijkt de eerste n karakters van de strings s1 en s2.
+ * Retourneert:
+ *   < 0 : s1 is kleiner dan s2
+ *     0 : s1 is gelijk aan s2 (binnen de eerste n karakters)
+ *   > 0 : s1 is groter dan s2
+ */
+int strncmp(const char *s1, const char *s2, size_t n);
+
+/**
+ * Zoekt naar de eerste verschijning van de string 'needle' in de string 'haystack'.
+ * De afsluitende '\0' karakters worden niet vergeleken.
+ * Retourneert een pointer naar het begin van de gevonden substring, 
+ * of NULL als de substring niet is gevonden.
+ */
+char *strstr(const char *haystack, const char *needle);
