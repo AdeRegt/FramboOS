@@ -153,4 +153,6 @@ static inline long long l_stub_ldexp(long long a, int e) { return a; }
 #include <setjmp.h>
 void printk(char *format, ...);
 #define lua_writestring(s,l)   printk(s,l)
+#define lua_writestringerror(s,l)   printk(s,l)
+#define lua_writeline()        (lua_writestring("\n", 1))
 #endif

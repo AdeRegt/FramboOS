@@ -3,6 +3,8 @@
 #include "pci.h"
 #include "bestandensysteem.h"
 
+void luatic(void *buffer);
+
 void kernel_main(BootInfo *bootinfo)
 {
 
@@ -35,8 +37,9 @@ void kernel_main(BootInfo *bootinfo)
     wachten_op_bestandssysteem();
     beeldscherm_leeg();
     printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
-    char *eargs[] = {0};
-    execvp("SHELL.BIN",eargs);
+    // char *eargs[] = {0};
+    // execvp("SHELL.BIN",eargs);
+    luatic("print('Hallo vanaf Lua in mijn eigen OS!')");
 
     while (1)
     {
