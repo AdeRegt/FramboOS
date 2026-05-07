@@ -8,3 +8,4 @@ build_c_files: $(CSOURCES)
 	nasm -f elf64 ./geheugen/interrupts/gdt.asm -o ./gdt.o
 	gcc -o ./../../vfsroot/kernel64.sys $(CSOURCES)  ./gdt.o -Iinclude -I../lua/origin -m64 -ffreestanding -mgeneral-regs-only -mcmodel=large -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -Werror -ffreestanding -Xlinker -T ./linkerscript.ld -nostdlib -lgcc -ffreestanding -g -no-pie -D ENABLE_GDT -D ENABLE_INTERUPTS -D ENABLE_PAGING -D ENABLE_XHCI -DLUA_32BITS -DLUA_USE_C89 -msoft-float -mno-mmx -mno-sse -mno-sse2 -Xlinker -z -Xlinker noexecstack
 	rm ./gdt.o
+	cd ../lua/origin && git stash
