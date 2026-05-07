@@ -45,6 +45,7 @@ void laad_geheugen(BootInfo *meme)
         printk("Niet genoeg geheugen gevonden voor kernel\n");for(;;);
     }
     printk("De kernel begint op %lx en eindigd op %lx en beslaat dus %lx \n",_KernelStart, _KernelEnd, (_KernelEnd - _KernelStart));
+    init_allocator(allocatie_geheugen_blok);
     
     #ifdef ENABLE_GDT 
     // Null descriptor

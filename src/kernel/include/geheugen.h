@@ -1,5 +1,6 @@
 #include "bootloader.h"
 #include "debugger.h"
+#include <stddef.h>
 
 #define MEMORY_TYPE_RESERVED 0
 #define MEMORY_TYPE_LOADER_CODE 1
@@ -175,6 +176,12 @@ typedef struct {
     uint64_t base;
 } __attribute__((packed)) GDTPointer;
 
+typedef struct MemoryBlock {
+    uint64_t size;          // Grootte van het blok (exclusief deze header)
+    int free;               // 1 als het vrij is, 0 als het in gebruik is
+    struct MemoryBlock *next; // Volgende blok in de lijst
+} MemoryBlock;
+
 extern void _KernelStart();
 extern void _KernelEnd();
 extern MemoryDescriptor *paging_geheugen_blok;
@@ -265,3 +272,7 @@ void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);
 void yield();
 uint32_t get_lapic_id();
 void write_tss(TSSEntry* entry, uint64_t tss_addr);
+void init_allocator(MemoryDescriptor *desc);
+static MemoryBlock *free_list_start;
+void *malloc(size_t size);
+void free(void *ptr);
