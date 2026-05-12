@@ -18,5 +18,18 @@ uint64_t syscall_r14;
 uint64_t syscall_r15;
 
 void syscallprobe(){
-    printk("__HALT__");for(;;);
+    printk("==== SYSCALL ====\nRAX: %d\nRBX: %d\nRCX: %d\nRDX: %d\n=================\n",syscall_rax,syscall_rbx,syscall_rcx,syscall_rdx);
+    switch(syscall_rax){
+        case 1:
+            if(syscall_rdi!=1){
+                printk("Trying to print on something different!");for(;;);
+            }
+            for(uint64_t i = 0 ; i < syscall_rdx; i++){
+                printk("%c",((uint8_t*)syscall_rsi)[i]);
+            }
+            break;
+        default:
+            printk("Unknown systemcall\n");
+            asm("cli\nhlt");        
+    }
 }
