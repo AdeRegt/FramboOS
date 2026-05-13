@@ -66,6 +66,10 @@ void laad_geheugen(BootInfo *meme)
     for(unsigned long i = 0; i < sizeof(TSS); i++) ((uint8_t*)&tss)[i] = 0;
     tss.iopb_offset = sizeof(TSS);
     
+    // Setup kernel stack for TSS (used when switching from ring 3 to ring 0)
+    // Allocate a kernel stack for handling interrupts from user mode
+    tss.rsp0 = (uint64_t)alloc_page() + 0x1000;  // Stack grows downward, so point to end
+    
     write_tss(&gdt.tss, (uint64_t)&tss);
 
     GDTPointer gdt_ptr;
@@ -97,9 +101,9 @@ void laad_geheugen(BootInfo *meme)
     define_page_memory_range_from_memory_descriptor(allocatie_geheugen_blok);
     define_page_memory_range_from_memory_descriptor(paging_geheugen_blok);
     define_page_memory_range_from_memory_descriptor(kernel_geheugen_blok);
-    map_memory(master_page_table, (void*)meme->graphics_info->BaseAddress, (void*)meme->graphics_info->BaseAddress);
+    map_memory(master_page_table, (void*)meme->graphics_info->BaseAddress, (void*)meme->graphics_info->BaseAddress,0);
     for(int i = 0 ; i < 5 ; i++){
-        map_memory(master_page_table, (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)), (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)));
+        map_memory(master_page_table, (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)), (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)),0);
     }
     asm volatile ("mov %0, %%cr3" : : "r" (master_page_table));
     #else 

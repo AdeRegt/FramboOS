@@ -9,7 +9,6 @@ static inline Elf64_Phdr *elf_section(Elf64_Ehdr *hdr, int idx) {
 	return &elf_pheader(hdr)[idx];
 }
 
-
 int execvp (const char *file, char *const argv[]){
     printk("=== execvp START: file=%s ===\n", file);
     
@@ -48,19 +47,14 @@ int execvp (const char *file, char *const argv[]){
             printk("    -> Copying to %x, size %d bytes\n", 
                    phdrs->p_vaddr, phdrs->p_filesz);
             memcpy((void*)phdrs->p_vaddr,(void*)((uint64_t)g + phdrs->p_offset),phdrs->p_filesz);
+            define_linear_user_memory_block((void*)phdrs->p_vaddr);
             printk("    -> Copy done\n");
         }
     }
     
     uint64_t addr = elfheader->e_entry;
     printk("klaar\nentrypoint is op %x !\n",addr);
-    printk("About to call entrypoint...\n");
+    printk("About to execute in USER MODE...\n");
     
-    // Voer de ELF entrypoint uit
-    // Dit moet in kernelspace gebeuren, niet met syscall
-    ((void (*)())addr)();
-    
-    // Zou hier nooit moeten bereiken, maar voor veiligheid:
-    printk("RETURNED FROM ENTRYPOINT (unexpected!)\n");
-    return 0;
+    jump_to_usermode(addr);
 }

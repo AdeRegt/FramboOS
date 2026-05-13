@@ -54,5 +54,5 @@ syscallentrypoint:
     mov r13, qword [syscall_r13]
     mov r14, qword [syscall_r14]
     mov r15, qword [syscall_r15]
-    swapgs
+    ; swapgs
     o64 sysret

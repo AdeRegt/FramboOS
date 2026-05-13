@@ -75,6 +75,17 @@ void printk(char *format, ...)
           print_raw_string(convertednumber);
         }
       }
+      
+      length++;
+    }
+    else if(deze == '\t')
+    {
+      int pml = beeldscherm_x;
+      if(pml){
+        pml /= 200;
+        pml++;
+        beeldscherm_x = pml * 200;
+      }
       length++;
     }
     else

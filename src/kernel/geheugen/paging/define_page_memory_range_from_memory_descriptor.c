@@ -10,6 +10,6 @@ void define_page_memory_range_from_memory_descriptor(MemoryDescriptor *desc){
     uint64_t aligned_start = (region_start + LARGE_PAGE_SIZE - 1) & ~(LARGE_PAGE_SIZE - 1);
 
     for(uint64_t addr = aligned_start; addr + LARGE_PAGE_SIZE <= region_end; addr += LARGE_PAGE_SIZE){
-        map_memory(master_page_table, (void*)addr, (void*)addr);
+        map_memory(master_page_table, (void*)addr, (void*)addr,0);
     }
 }

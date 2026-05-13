@@ -18,7 +18,6 @@ uint64_t syscall_r14;
 uint64_t syscall_r15;
 
 void syscallprobe(){
-    printk("==== SYSCALL ====\nRAX: %d\nRBX: %d\nRCX: %d\nRDX: %d\n=================\n",syscall_rax,syscall_rbx,syscall_rcx,syscall_rdx);
     switch(syscall_rax){
         case 1:
             if(syscall_rdi!=1){
@@ -29,6 +28,7 @@ void syscallprobe(){
             }
             break;
         default:
+            printk("\n==== SYSCALL ====\nRAX: %d\tRBX: %d\tRCX: %d\tRDX: %d\n=================\n",syscall_rax,syscall_rbx,syscall_rcx,syscall_rdx);
             printk("Unknown systemcall\n");
             asm("cli\nhlt");        
     }

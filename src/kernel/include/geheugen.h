@@ -32,6 +32,12 @@
 
 #define GDT_KERNEL_CODE 0x08
 #define GDT_KERNEL_DATA 0x10
+#define GDT_USER_DATA 0x18
+#define GDT_USER_CODE 0x20
+
+// User mode selectors with RPL (Requested Privilege Level) = 3
+#define GDT_USER_CODE_RPL3 (GDT_USER_CODE | 3)  // 0x23
+#define GDT_USER_DATA_RPL3 (GDT_USER_DATA | 3)  // 0x1B
 
 #define PIC1		0x20		/* IO base address for master PIC */
 #define PIC2		0xA0		/* IO base address for slave PIC */
@@ -231,7 +237,8 @@ void laad_geheugen(BootInfo *memory_info);
 char* geheugen_geheugenblok_type_naar_string(uint32_t type);
 void geheugen_kaart_debug(MemoryDescriptor *desc);
 PageLookupResult page_map_indexer(uint64_t virtual_address);
-void map_memory(void* pml4mem, void *virtualmemory,void* physicalmemory);
+void map_memory(void* pml4mem, void *virtualmemory,void* physicalmemory,uint8_t is_user);
+void define_linear_user_memory_block(void *address);
 void define_linear_memory_block(void *address);
 void define_page_memory_range_from_memory_descriptor(MemoryDescriptor *desc);
 void* alloc_page();
@@ -265,3 +272,4 @@ void cpu_set_specific_registers(uint32_t msr, uint32_t lo, uint32_t hi);
 void yield();
 uint32_t get_lapic_id();
 void write_tss(TSSEntry* entry, uint64_t tss_addr);
+void jump_to_usermode(uint64_t addr);
