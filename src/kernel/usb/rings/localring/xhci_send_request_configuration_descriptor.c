@@ -2,7 +2,7 @@
 
 void xhci_send_request_configuration_descriptor(XHCIControllerSession *session, USBDevice* device)
 {
-    USBStandardConfigurationDescriptor* configdesc = (USBStandardConfigurationDescriptor*) alloc_page();
+    USBStandardConfigurationDescriptor* configdesc = (USBStandardConfigurationDescriptor*) kalloc();
     device->configdesc = configdesc;
     device->initialisation_status = 2; // In afwachting van Configuration Descriptor
     // Stuur een Request Configuration Descriptor Command TRB

@@ -1,6 +1,26 @@
 #include "geheugen.h"
 
-#define createinthandler(y) INTERRUPT error_interrupt_handler_##y##_ (interrupt_frame* frame){printk("ERROR INTERRUPT %d FIRED! @%x \n" , y , frame->ip);cli();hlt();}
+// Special handler for Page Fault (interrupt 14) with detailed debugging
+INTERRUPT error_interrupt_handler_0x0E_(interrupt_frame* frame) {
+    uint64_t cr2;
+    
+    // Read CR2 (faulting address)
+    asm volatile("mov %%cr2, %0" : "=r"(cr2) : : "memory");
+    
+    printk("\n========== PAGE FAULT (INT 0x0E) ==========\n");
+    printk("Faulting Address (CR2): %lx\n", cr2);
+    printk("Instruction Pointer: %lx\n", frame->ip);
+    printk("Code Segment: %lx\n", frame->cs);
+    printk("Stack Pointer: %lx\n", frame->sp);
+    printk("Stack Segment: %lx\n", frame->ss);
+    printk("Flags Register: %lx\n", frame->flags);
+    printk("===========================================\n");
+    
+    cli();
+    hlt();
+}
+
+#define createinthandler(y) INTERRUPT error_interrupt_handler_##y##_ (interrupt_frame* frame){printk("ERROR INTERRUPT %d FIRED! @ip:%lx sp:%lx \n" , y , frame->ip, frame->sp);cli();hlt();}
 createinthandler(0x00)
 createinthandler(0x01)
 createinthandler(0x02)
@@ -15,7 +35,7 @@ createinthandler(0x0A)
 createinthandler(0x0B)
 createinthandler(0x0C)
 createinthandler(0x0D)
-createinthandler(0x0E)
+// Handler for 0x0E is custom above
 createinthandler(0x0F)
 createinthandler(0x10)
 createinthandler(0x11)

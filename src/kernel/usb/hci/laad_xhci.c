@@ -6,6 +6,7 @@
 
 void laad_xhci(pci_class* xhci_device)
 {
+    define_linear_memory_block((void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0));
     XHCIControllerSession* session = xhci_allocate_new_session();
     session->pci_device = xhci_device;
     session->base_xhci_address = (void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0);

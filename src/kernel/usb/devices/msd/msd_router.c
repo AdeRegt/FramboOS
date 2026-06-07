@@ -4,7 +4,7 @@
 void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* transfer_event){
     MassStorageDevice* msd = (MassStorageDevice*) device->attachment;
     if(msd->loop_id==1){
-        void* data = alloc_page();
+        void* data = kalloc();
         xhci_recieve_bulk(session,device,msd->datalength,data);
         msd->loop_id=2;
         return;
@@ -55,7 +55,7 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
             msd->root_directory = (fat32_directory*) inc;
         }else if(msd->loop_id==3){
             
-            MSDDevice* dev = (MSDDevice*) alloc_page();
+            MSDDevice* dev = (MSDDevice*) kalloc();
             dev->device = device;
             dev->session = session;
             bs_regristreer(dev);
@@ -81,7 +81,7 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
     }
     if(msd->loop_id==2){
         msd->loop_id=3;
-        void* data = alloc_page();
+        void* data = kalloc();
         xhci_recieve_bulk(session,device,13,data);
     }
 }

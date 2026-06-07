@@ -20,11 +20,11 @@ void handle_inquery_command(XHCIControllerSession *session, USBDevice* device, T
 
     device->devicetype = 1;
 
-    MassStorageDevice* msd = (MassStorageDevice*) alloc_page();
+    MassStorageDevice* msd = (MassStorageDevice*) kalloc();
     msd->inquery = inc;
 
     device->attachment = msd;
 
-    void* data = alloc_page();
+    void* data = kalloc();
     xhci_recieve_bulk(session,device,13,data);
 }

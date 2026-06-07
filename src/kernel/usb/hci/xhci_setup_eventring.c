@@ -2,8 +2,8 @@
 
 void xhci_setup_eventring(XHCIControllerSession *session)
 {
-    session->xhci_event_ring_segment_table = (XHCIEventRingSegmentTable*) alloc_page();
-    session->xhci_event_ring = (uint32_t*) alloc_page();
+    session->xhci_event_ring_segment_table = (XHCIEventRingSegmentTable*) kalloc();
+    session->xhci_event_ring = (uint32_t*) kalloc();
     session->xhci_event_ring_cycle_state = XHCI_CRCS_DEFAULT_CYCLE_STATE;
     
     //

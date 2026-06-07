@@ -11,10 +11,10 @@ void* msd_load_file(XHCIControllerSession *session, USBDevice* device,fat32_file
     
     printk("-> %d <%d %d> %s [ %d ]\n",sector,bestand->FstClusHI,bestand->FstClusLO,bestand->Name,(bestand->FileSize/SCSI_SECTOR_SIZE)+1);
     
-    void* primairybuffer = alloc_page();
+    void* primairybuffer = kalloc();
     for(uint32_t i = MEMORY_PAGE_SIZE ; i < bestand->FileSize ; i += MEMORY_PAGE_SIZE)
     {
-        alloc_page();
+        kalloc();
     }
     
     uint32_t z = 0;

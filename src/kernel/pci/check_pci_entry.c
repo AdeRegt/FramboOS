@@ -19,7 +19,7 @@ pci_class* check_pci_entry(uint8_t bus, uint8_t slot, uint8_t function)
         data = get_pci_dword(bus, slot, function, 0x3C);
         uint8_t interrupt = data & 0xFF;
 
-        pci_class *pci = (pci_class *) alloc_page();
+        pci_class *pci = (pci_class *) kalloc();
         pci->bus = bus;
         pci->slot = slot;
         pci->function = function;

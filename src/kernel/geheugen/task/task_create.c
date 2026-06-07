@@ -11,11 +11,11 @@ void task_create(char* name, void (*func)()){
     memset(&ct[max_task], 0, sizeof(task_t));
     // memcpy(&ct[max_task].context, &ct[0].context, sizeof(cpu_context_t));
     ct[max_task].context.rip = (uint64_t) func;
-    ct[max_task].context.rsp = (uint64_t) alloc_page();
+    ct[max_task].context.rsp = (uint64_t) kalloc();
     ct[max_task].context.rflags = 0x202;
     ct[max_task].context.cs = GDT_KERNEL_CODE;
     ct[max_task].context.ss = GDT_KERNEL_DATA;
-    alloc_page();
+    kalloc();
     ct[max_task].state = 1;
     memcpy(ct[max_task].name, name, 32);
     max_task++;

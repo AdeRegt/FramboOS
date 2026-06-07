@@ -2,7 +2,7 @@
 
 void xhci_setup_commandring(XHCIControllerSession *session)
 {
-    session->xhci_command_ring = (uint32_t*) alloc_page();
+    session->xhci_command_ring = (uint32_t*) kalloc();
 
     //
     // Initialiseer de Command Ring

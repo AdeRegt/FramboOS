@@ -15,9 +15,9 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
         return;
     }
 
-    void* mostar = alloc_page();
-    void* ring1 = alloc_page();
-    void* ring2 = alloc_page();
+    void* mostar = kalloc();
+    void* ring1 = kalloc();
+    void* ring2 = kalloc();
 
     uint8_t ep_addr1 = ( device->configdesc->endpoint1.bEndpointAddress & 0xF ) * 2;
 	ep_addr1 += (device->configdesc->endpoint1.bEndpointAddress & USB_DIR_IN) ? 1 : 0;
@@ -64,14 +64,14 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
     trb->DataBufferPointerLo = (uint32_t)(uint64_t)(mostar);
 	trb->DataBufferPointerHi = (uint32_t)0;
 
-    USBRing* ringdec1 = (USBRing*) alloc_page();
+    USBRing* ringdec1 = (USBRing*) kalloc();
     ringdec1->cycle_state = 1;
     ringdec1->endpoint_id = ep_addr1;
     ringdec1->ring_size = 20;
     ringdec1->slot_id = device->slot_id;
     ringdec1->ring_trbs = ring1;
 
-    USBRing* ringdec2 = (USBRing*) alloc_page();
+    USBRing* ringdec2 = (USBRing*) kalloc();
     ringdec2->cycle_state = 1;
     ringdec2->endpoint_id = ep_addr2;
     ringdec2->ring_size = 20;

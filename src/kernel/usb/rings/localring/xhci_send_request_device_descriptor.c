@@ -2,7 +2,7 @@
 
 void xhci_send_request_device_descriptor(XHCIControllerSession *session, USBDevice* device)
 {
-    USBStandardDeviceDescriptor* devdesc = (USBStandardDeviceDescriptor*) alloc_page();
+    USBStandardDeviceDescriptor* devdesc = (USBStandardDeviceDescriptor*) kalloc();
     device->devdesc = devdesc;
     device->initialisation_status = 1; // In afwachting van Device Descriptor
     // Stuur een Request Device Descriptor Command TRB

@@ -2,7 +2,7 @@
 #include "xhci.h"
 
 uint8_t* directory(){
-    uint8_t* pth = (uint8_t*) alloc_page();
+    uint8_t* pth = (uint8_t*) kalloc();
     MSDDevice* f = (MSDDevice*) fshook;
     MassStorageDevice* msd = (MassStorageDevice*) f->device->attachment;
 

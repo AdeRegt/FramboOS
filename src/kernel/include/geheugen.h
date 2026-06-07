@@ -273,3 +273,4 @@ void yield();
 uint32_t get_lapic_id();
 void write_tss(TSSEntry* entry, uint64_t tss_addr);
 void jump_to_usermode(uint64_t addr);
+void* kalloc();

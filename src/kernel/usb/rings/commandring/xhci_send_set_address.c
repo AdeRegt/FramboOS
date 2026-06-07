@@ -29,8 +29,8 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 		calculatedportspeed = 64;
 	}
 
-    void *localring = alloc_page();
-	void *infostructures = alloc_page();
+    void *localring = kalloc();
+	void *infostructures = kalloc();
 	XHCIInputControlContext *icc = (XHCIInputControlContext*) infostructures;
 	icc->Aregisters = 0b11;
 
@@ -48,14 +48,14 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	epc->DequeueCycleState = 1;
 	epc->MaxESITPayloadLow = 2;
 	
-	session->device_context_base_address_array[device->slot_id] = ((uint64_t)alloc_page());
+	session->device_context_base_address_array[device->slot_id] = ((uint64_t)kalloc());
 	
 	trb->DataBufferPointerLo = (uint32_t)(uint64_t)(infostructures);
 	trb->DataBufferPointerHi = (uint32_t)0;
 
 	device->infostructures = infostructures;
 
-	USBRing* control_ring = (USBRing*) alloc_page();
+	USBRing* control_ring = (USBRing*) kalloc();
 	control_ring->ring_trbs = localring;
 	control_ring->ring_size = XHCI_COMMAND_RING_SIZE;
 	control_ring->enqueue_index = 0;
