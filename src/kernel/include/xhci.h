@@ -1,37 +1,56 @@
 #include "pci.h"
+// ============================================================================
+// 1. CAPABILITY REGISTERS (Direct aanpasbaar als variabele)
+// ============================================================================
+#define CAPLENGTH    (*(volatile uint8_t*)((uintptr_t)session->base_xhci_address + 0x00))
+#define HCIVERSION   (*(volatile uint16_t*)((uintptr_t)session->base_xhci_address + 0x02))
+#define HCSPARAMS1   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x04))
+#define HCSPARAMS2   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x08))
+#define HCSPARAMS3   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x0C))
+#define HCCPARAMS1   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x10))
+#define DBOFF        (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x14))
+#define RTSOFF       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x18))
+#define HCCPARAMS2   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x1C))
+#define VTIOSOFF     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x20))
 
-#define CAPLENGTH ((uint8_t*)session->base_xhci_address)[0]
-#define HCIVERSION ((uint16_t*)( session->base_xhci_address + 0x02 ))[0]
-#define HCSPARAMS1 ((uint32_t*)( session->base_xhci_address + 0x04 ))[0]
-#define HCSPARAMS2 ((uint32_t*)( session->base_xhci_address + 0x08 ))[0]
-#define HCSPARAMS3 ((uint32_t*)( session->base_xhci_address + 0x0C ))[0]
-#define HCCPARAMS1 ((uint32_t*)( session->base_xhci_address + 0x10 ))[0]
-#define DBOFF ((uint32_t*)( session->base_xhci_address + 0x14 ))[0]
-#define RTSOFF ((uint32_t*)( session->base_xhci_address + 0x18 ))[0]
-#define HCCPARAMS2 ((uint32_t*)( session->base_xhci_address + 0x1C ))[0]
-#define VTIOSOFF ((uint32_t*)( session->base_xhci_address + 0x20 ))[0]
+// ============================================================================
+// 2. OPERATIONAL REGISTERS (Direct aanpasbaar als variabele)
+// ============================================================================
+#define USBCMD       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x00))
+#define USBSTS       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x04))
+#define PAGESIZE     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x08))
+#define DNCTRL       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x14))
+#define CRCR_L       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x18))
+#define CRCR_H       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x1C))
+#define DCBAAP_L     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x30))
+#define DCBAAP_H     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x34))
+#define CONFIG       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x38))
+#define PORTSC(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x400 + (0x10 * (n))))
 
-#define USBCMD ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x00 ))[0]
-#define USBSTS ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x04 ))[0]
-#define PAGESIZE ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x08 ))[0]
-#define DNCTRL ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x14 ))[0]
-#define CRCR_L ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x18 ))[0]
-#define CRCR_H ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x18 + 4 ))[0]
-#define DCBAAP_L ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x30 ))[0]
-#define DCBAAP_H ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x30 + 4 ))[0]
-#define CONFIG ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x38 ))[0]
-#define PORTSC(n) ((uint32_t*)( session->base_xhci_address + CAPLENGTH + (0x400 + (0x10 * n)) ))[0]
+// ============================================================================
+// 3. RUNTIME REGISTERS (Direct aanpasbaar als variabele)
+// ============================================================================
+// NOTITIE: xHCI spec vereist dat de onderste 5 bits van RTSOFF gemaskeerd worden (& 0xFFFFFFE0)
+#define MFINDEX      (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x00))
+#define IMAN(n)      (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x20 + (32 * (n))))
+#define IMOD(n)      (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x24 + (32 * (n))))
+#define ERSTSZ(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x28 + (32 * (n))))
 
-#define MFINDEX ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x00 ))[0]
-#define IMAN(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x20 + (32*n) ))[0]
-#define IMOD(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x24 + (32*n) ))[0]
-#define ERSTSZ(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x28 + (32*n) ))[0]
-#define ERSTBA_L(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x30 + (32*n) ))[0]
-#define ERSTBA_H(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x30 + 4 + (32*n) ))[0]
-#define ERDP_L(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x38 + (32*n) ))[0]
-#define ERDP_H(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x38 + 4 + (32*n) ))[0]
+// GEFIXT: Registers zijn nu netjes opgesplitst in 32-bit delen om geheugenoverlap te voorkomen
+#define ERSTBA_L(n)  (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x30 + (32 * (n))))
+#define ERSTBA_H(n)  (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x34 + (32 * (n))))
+#define ERDP_L(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x38 + (32 * (n))))
+#define ERDP_H(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x3C + (32 * (n))))
 
-#define DOORBELL ((uint32_t*) ( session->base_xhci_address + DBOFF ))
+// OPTIONEEL: Als je in een 64-bit kernel in één keer het hele 64-bit adres wilt schrijven:
+#define ERSTBA_64(n) (*(volatile uint64_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x30 + (32 * (n))))
+#define ERDP_64(n)   (*(volatile uint64_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x38 + (32 * (n))))
+
+// ============================================================================
+// 4. DOORBELL REGISTERS (Direct aanpasbaar als variabele)
+// ============================================================================
+// GEFIXT: Array-index toegevoegd aangezien er een deurbel-register is per actief USB-slot
+#define DOORBELL(n)  (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + DBOFF + (4 * (n))))
 
 #define HCSPARAMS1_MASK_MaxSlots 0xFF
 #define HCSPARAMS1_MaxSlots ( HCSPARAMS1 & HCSPARAMS1_MASK_MaxSlots )

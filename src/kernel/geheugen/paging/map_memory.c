@@ -1,6 +1,6 @@
 #include "geheugen.h"
 
-void map_memory(void* pml4mem, void *virtualmemory, void* physicalmemory, uint8_t is_user) {
+void map_memory(void* pml4mem, void *virtualmemory, void* physicalmemory, uint8_t is_user, uint8_t is_cache) {
     // Definieer de maskers voor 2MB uitlijning (de onderste 21 bits moeten 0 worden)
     uint64_t vaddr = (uint64_t)virtualmemory & ~0x1FFFFF;
     uint64_t paddr = (uint64_t)physicalmemory & ~0x1FFFFF;
@@ -41,9 +41,10 @@ void map_memory(void* pml4mem, void *virtualmemory, void* physicalmemory, uint8_
     Page* pd_entry = &PD->pages[lookup.page_directory_table_index];
     
     // We gebruiken hier het netjes uitgelijnde fysieke adres (paddr)
-    pd_entry->address     = paddr >> 12;
-    pd_entry->present     = 1;
-    pd_entry->readwrite   = 1;
-    pd_entry->largepages  = 1; // Vertel de CPU dat dit een 2MB pagina is
-    pd_entry->usersuper   = is_user;
+    pd_entry->address           = paddr >> 12;
+    pd_entry->present           = 1;
+    pd_entry->readwrite         = 1;
+    pd_entry->largepages        = 1; // Vertel de CPU dat dit een 2MB pagina is
+    pd_entry->usersuper         = is_user;
+    pd_entry->cachedisabled     = is_cache; // Bit 4 voorkomt dat de CPU registers cachet
 }

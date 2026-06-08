@@ -17,26 +17,37 @@ void install_device_interrupt(pci_class* device, void (*handler)())
         int msi_cap = pci_find_capability(device, PCI_CAP_ID_MSI);
         if(msi_cap)
         {
-            printk("Interrupt using MSI at capability offset %x apicid %d at vector %x  \n",msi_cap,get_lapic_id(),intlist);
-            uint16_t control = get_pci_dword(device->bus, device->slot, device->function, msi_cap + 2) & 0xFFFF;
+            printk("Interrupt using MSI at capability offset %x apicid %d at vector %x \n", msi_cap, get_lapic_id(), intlist);
+            
+            // Lees offset +0 (dword-aligned). 
+            // Byte 0: Cap ID, Byte 1: Next Ptr, Byte 2-3: Message Control
+            uint32_t cap_header = get_pci_dword(device->bus, device->slot, device->function, msi_cap);
+            
+            // Isoleer het 16-bit Message Control register
+            uint16_t control = (cap_header >> 16) & 0xFFFF;
             int is_64 = (control & (1 << 7)) != 0;
             
-            // Set MSI address (for x86, usually 0xFEE00000 | (APIC ID << 12))
-            uint32_t msi_addr = LAPIC_BASE | (get_lapic_id()<<12);
-            set_pci_dword(device->bus, device->slot, device->function, msi_cap + 4 , msi_addr);//+4?
+            // Set MSI Address Low (voor x86: 0xFEE00000 | (APIC ID << 12))
+            uint32_t msi_addr_low = LAPIC_BASE | (get_lapic_id() << 12);
+            set_pci_dword(device->bus, device->slot, device->function, msi_cap + 4, msi_addr_low);
 
-            // Set MSI data (the vector number)
+            // Set MSI Address High en Data afhankelijk van 64-bit support
             if (is_64) {
-                set_pci_dword(device->bus, device->slot, device->function, msi_cap + 8, intlist);
+                set_pci_dword(device->bus, device->slot, device->function, msi_cap + 8, 0); // Address High = 0
+                set_pci_dword(device->bus, device->slot, device->function, msi_cap + 12, intlist); // Data op +12 (0x0C)
             } else {
-                set_pci_word(device->bus, device->slot, device->function, msi_cap + 8, (uint16_t)intlist);
+                // Gebruik dword write voor uitlijning (data is 16-bit, maar dword padding erbovenop is veilig)
+                set_pci_dword(device->bus, device->slot, device->function, msi_cap + 8, intlist); 
             }
 
-            // // Enable MSI
+            // Enable MSI door bit 0 van het control register te zetten
             control |= 1;
-            set_pci_word(device->bus, device->slot, device->function, msi_cap + 2, control);
+            
+            // Bewerk het originele header-dword met de nieuwe control-waarde en schrijf terug
+            cap_header = (cap_header & 0x0000FFFF) | ((uint32_t)control << 16);
+            set_pci_dword(device->bus, device->slot, device->function, msi_cap, cap_header);
 
-            // printk("MSI enabled for device at bus %d slot %d func %d\n", device->bus, device->slot, device->function);
+            // Registreer in de IDT
             idt_set_entry(&idt[intlist], handler, GDT_KERNEL_CODE, 0, IDT_TYPE_INTERRUPT_GATE);
 
             intlist++;

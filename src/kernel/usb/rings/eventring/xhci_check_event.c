@@ -4,7 +4,7 @@ void xhci_check_event()
 {
     for(int sessionid = 0 ; sessionid < xhci_session_count; sessionid++){
         XHCIControllerSession *session = &xhci_session[sessionid];
-        volatile uint32_t *event_ring = (volatile uint32_t*)(ERDP_L(0) & 0xFFFFFFF0);
+        volatile uint32_t *event_ring = (volatile uint32_t*)(uint64_t)(uint32_t)(ERDP_L(0) & 0xFFFFFFF0);
         // for(int c = 0 ; c < XHCI_EVENT_RING_SIZE ; c++){
             volatile uint32_t wingA = event_ring[0];
             volatile uint32_t wingB = event_ring[1];
@@ -43,10 +43,10 @@ void xhci_check_event()
                     // printk("XHCI: warning: eventring spoiled!\n");
                     session->xhci_event_ring_cycle_state ^= 1;
                     // memset((void*)event_ring,0,(sizeof(uint32_t)*4)*XHCI_EVENT_RING_SIZE);
-                    ERDP_L(0) = (uint64_t)(uintptr_t)session->xhci_event_ring | 1;
+                    ERDP_L(0) = (uint64_t)(uintptr_t)session->xhci_event_ring | 1 | (1 << 3);
                     ERDP_H(0) = 0;
                 }else{
-                    ERDP_L(0) = (uint64_t)((uintptr_t)&event_ring[4]) | 1;
+                    ERDP_L(0) = (uint64_t)((uintptr_t)&event_ring[4]) | 1 | (1 << 3);
                     ERDP_H(0) = 0;
                 }
                 // printk("HALTED HERE");

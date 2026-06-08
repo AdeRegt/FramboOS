@@ -6,10 +6,20 @@
 
 void laad_xhci(pci_class* xhci_device)
 {
-    define_linear_memory_block((void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0));
+    //
+    // Schakel bus mastering in
+    //
+    pci_enable_busmastering(xhci_device->bus, xhci_device->slot, xhci_device->function);
+    
+    uint64_t bar_address = xhci_device->bar0 & 0xFFFFFFF0;
+    if ((xhci_device->bar0 & 0x6) == 0x4) { 
+        bar_address |= ((uint64_t)xhci_device->bar1) << 32;
+    }
+
+    define_linear_memory_block((void*)(uintptr_t)(bar_address),1);
     XHCIControllerSession* session = xhci_allocate_new_session();
     session->pci_device = xhci_device;
-    session->base_xhci_address = (void*)(uintptr_t)(xhci_device->bar0 & 0xFFFFFFF0);
+    session->base_xhci_address = (void*)(uintptr_t)(bar_address);
     // printk("XHCI is beschikbaar op IRQ %d met BAR0 %x \n", xhci_device->interrupt, session->base_xhci_address);
 
     #ifdef XHCI_CHECK_INTERNALS
@@ -67,11 +77,6 @@ void laad_xhci(pci_class* xhci_device)
     #endif
 
     //
-    // Schakel bus mastering in
-    //
-    pci_enable_busmastering(xhci_device->bus, xhci_device->slot, xhci_device->function);
-
-    //
     // Voer BIOS handoff uit
     //
     perform_bios_handoff(session);
@@ -112,25 +117,28 @@ void laad_xhci(pci_class* xhci_device)
     xhci_setup_eventring(session);
 
     #ifdef ENABLE_XHCI_INTERUPTS
-    IMAN (0) = 0b10;
-    IMOD (0) = 0;
+    IMOD(0) = 0x0FA00000;
+    IMAN(0) = 0x3;
 	USBCMD = USBCMD | USBCMD_MASK_RS | USBCMD_MASK_INTE;
     #else 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
     #endif 
-    sleep(10000);
+    sleep(100);
     while(1){
-        uint8_t rs = xhci_check_for_new_devs();
-        printk("Er zijn %d poorten klaar om gelezen te worden met activatie!\n",rs);
+        uint8_t rs = 0;
+        #ifndef ENABLE_XHCI_INTERUPTS
+        rs = xhci_check_for_new_devs();
+        // printk("Er zijn %d poorten klaar om gelezen te worden met activatie!\n",rs);
         if(rs!=0){
             break;
         }
+        #endif
         rs = xhci_custom_check(session);
-        printk("Er zijn %d poorten klaar om gelezen te worden met portpolling!\n",rs);
+        // printk("Er zijn %d poorten klaar om gelezen te worden met portpolling!\n",rs);
         if(rs!=0){
             break;
         }
-        sleep(10000);
+        sleep(100);
     }
 
     #ifndef ENABLE_XHCI_INTERUPTS
