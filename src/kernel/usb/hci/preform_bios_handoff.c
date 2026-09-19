@@ -20,7 +20,7 @@ void perform_bios_handoff(XHCIControllerSession *session)
 			}
 			if (capid == 1)
 			{
-				printk("perform_bios_handoff: BIOS/UEFI handoff gevonden.\n");
+				printd("perform_bios_handoff: BIOS/UEFI handoff gevonden.\n");
 			}
 			if (capid == 1 && reg & 0x10000)
 			{

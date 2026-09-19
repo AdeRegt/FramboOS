@@ -2,9 +2,13 @@
 
 void xhci_setup_eventring(XHCIControllerSession *session)
 {
-    session->xhci_event_ring_segment_table = (XHCIEventRingSegmentTable*) kalloc();
-    session->xhci_event_ring = (uint32_t*) kalloc();
+    session->xhci_event_ring_segment_table = (XHCIEventRingSegmentTable*) alloc_page();
+    session->xhci_event_ring = (uint32_t*) alloc_page();
     session->xhci_event_ring_cycle_state = XHCI_CRCS_DEFAULT_CYCLE_STATE;
+    session->event_ring_processing = 0;  // Initialize processing guard
+    
+    define_linear_memory_block((void*)(uintptr_t)(session->xhci_event_ring_segment_table),1);
+    define_linear_memory_block((void*)(uintptr_t)(session->xhci_event_ring),1);
     
     //
     // Initialiseer de Event Ring Segment Table
@@ -35,5 +39,5 @@ void xhci_setup_eventring(XHCIControllerSession *session)
     ERDP_L(0) = (uint64_t)(uintptr_t)session->xhci_event_ring;
     ERDP_H(0) = 0;
 
-    printk("xhci_setup_eventring: Event Ring ingesteld op %x met grootte %d erdp %x \n", session->xhci_event_ring, XHCI_EVENT_RING_SIZE, ERDP_L(0));
+    printd("xhci_setup_eventring: Event Ring ingesteld op %x met grootte %d erdp %x \n", session->xhci_event_ring, XHCI_EVENT_RING_SIZE, ERDP_L(0));
 }

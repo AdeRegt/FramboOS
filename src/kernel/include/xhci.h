@@ -1,56 +1,41 @@
 #include "pci.h"
-// ============================================================================
-// 1. CAPABILITY REGISTERS (Direct aanpasbaar als variabele)
-// ============================================================================
-#define CAPLENGTH    (*(volatile uint8_t*)((uintptr_t)session->base_xhci_address + 0x00))
-#define HCIVERSION   (*(volatile uint16_t*)((uintptr_t)session->base_xhci_address + 0x02))
-#define HCSPARAMS1   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x04))
-#define HCSPARAMS2   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x08))
-#define HCSPARAMS3   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x0C))
-#define HCCPARAMS1   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x10))
-#define DBOFF        (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x14))
-#define RTSOFF       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x18))
-#define HCCPARAMS2   (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x1C))
-#define VTIOSOFF     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + 0x20))
 
-// ============================================================================
-// 2. OPERATIONAL REGISTERS (Direct aanpasbaar als variabele)
-// ============================================================================
-#define USBCMD       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x00))
-#define USBSTS       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x04))
-#define PAGESIZE     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x08))
-#define DNCTRL       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x14))
-#define CRCR_L       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x18))
-#define CRCR_H       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x1C))
-#define DCBAAP_L     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x30))
-#define DCBAAP_H     (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x34))
-#define CONFIG       (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x38))
-#define PORTSC(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + CAPLENGTH + 0x400 + (0x10 * (n))))
+// Memory barrier to ensure hardware register writes complete
+// Use volatile to prevent compiler optimization
+#define memory_barrier() asm volatile("" ::: "memory")
 
-// ============================================================================
-// 3. RUNTIME REGISTERS (Direct aanpasbaar als variabele)
-// ============================================================================
-// NOTITIE: xHCI spec vereist dat de onderste 5 bits van RTSOFF gemaskeerd worden (& 0xFFFFFFE0)
-#define MFINDEX      (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x00))
-#define IMAN(n)      (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x20 + (32 * (n))))
-#define IMOD(n)      (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x24 + (32 * (n))))
-#define ERSTSZ(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x28 + (32 * (n))))
+#define CAPLENGTH ((uint8_t*)session->base_xhci_address)[0]
+#define HCIVERSION ((uint16_t*)( session->base_xhci_address + 0x02 ))[0]
+#define HCSPARAMS1 ((uint32_t*)( session->base_xhci_address + 0x04 ))[0]
+#define HCSPARAMS2 ((uint32_t*)( session->base_xhci_address + 0x08 ))[0]
+#define HCSPARAMS3 ((uint32_t*)( session->base_xhci_address + 0x0C ))[0]
+#define HCCPARAMS1 ((uint32_t*)( session->base_xhci_address + 0x10 ))[0]
+#define DBOFF ((uint32_t*)( session->base_xhci_address + 0x14 ))[0]
+#define RTSOFF ((uint32_t*)( session->base_xhci_address + 0x18 ))[0]
+#define HCCPARAMS2 ((uint32_t*)( session->base_xhci_address + 0x1C ))[0]
+#define VTIOSOFF ((uint32_t*)( session->base_xhci_address + 0x20 ))[0]
 
-// GEFIXT: Registers zijn nu netjes opgesplitst in 32-bit delen om geheugenoverlap te voorkomen
-#define ERSTBA_L(n)  (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x30 + (32 * (n))))
-#define ERSTBA_H(n)  (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x34 + (32 * (n))))
-#define ERDP_L(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x38 + (32 * (n))))
-#define ERDP_H(n)    (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x3C + (32 * (n))))
+#define USBCMD ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x00 ))[0]
+#define USBSTS ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x04 ))[0]
+#define PAGESIZE ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x08 ))[0]
+#define DNCTRL ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x14 ))[0]
+#define CRCR_L ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x18 ))[0]
+#define CRCR_H ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x18 + 4 ))[0]
+#define DCBAAP_L ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x30 ))[0]
+#define DCBAAP_H ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x30 + 4 ))[0]
+#define CONFIG ((uint32_t*)( session->base_xhci_address + CAPLENGTH + 0x38 ))[0]
+#define PORTSC(n) ((uint32_t*)( session->base_xhci_address + CAPLENGTH + (0x400 + (0x10 * n)) ))[0]
 
-// OPTIONEEL: Als je in een 64-bit kernel in één keer het hele 64-bit adres wilt schrijven:
-#define ERSTBA_64(n) (*(volatile uint64_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x30 + (32 * (n))))
-#define ERDP_64(n)   (*(volatile uint64_t*)((uintptr_t)session->base_xhci_address + (RTSOFF & 0xFFFFFFE0) + 0x38 + (32 * (n))))
+#define MFINDEX ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x00 ))[0]
+#define IMAN(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x20 + (32*n) ))[0]
+#define IMOD(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x24 + (32*n) ))[0]
+#define ERSTSZ(n) ((uint32_t*)( session->base_xhci_address + RTSOFF + 0x28 + (32*n) ))[0]
+#define ERSTBA_L(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x30 + (32*n) ))[0]
+#define ERSTBA_H(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x30 + 4 + (32*n) ))[0]
+#define ERDP_L(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x38 + (32*n) ))[0]
+#define ERDP_H(n) ((uint64_t*)( session->base_xhci_address + RTSOFF + 0x38 + 4 + (32*n) ))[0]
 
-// ============================================================================
-// 4. DOORBELL REGISTERS (Direct aanpasbaar als variabele)
-// ============================================================================
-// GEFIXT: Array-index toegevoegd aangezien er een deurbel-register is per actief USB-slot
-#define DOORBELL(n)  (*(volatile uint32_t*)((uintptr_t)session->base_xhci_address + DBOFF + (4 * (n))))
+#define DOORBELL(n) ((uint32_t*) ( session->base_xhci_address + DBOFF ))[n]
 
 #define HCSPARAMS1_MASK_MaxSlots 0xFF
 #define HCSPARAMS1_MaxSlots ( HCSPARAMS1 & HCSPARAMS1_MASK_MaxSlots )
@@ -574,6 +559,7 @@ typedef struct {
     XHCIEventRingSegmentTable* xhci_event_ring_segment_table;
     uint32_t* xhci_event_ring;
     uint8_t xhci_event_ring_cycle_state;
+    volatile uint8_t event_ring_processing;  // Guard against concurrent event processing
     USBDevice devices[5];
     uint8_t max_ports;
 }__attribute__((packed)) XHCIControllerSession;
@@ -687,7 +673,7 @@ void xhci_setup_dcbaap(XHCIControllerSession *session);
 void xhci_setup_commandring(XHCIControllerSession *session);
 void xhci_setup_eventring(XHCIControllerSession *session);
 void xhci_set_max_ports(XHCIControllerSession *session);
-void event_watcher();
+void event_watcher(int timeout);
 void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusChangeEventTransferRequestBlock* psc_event);
 void xhci_send_enable_slot(XHCIControllerSession *session, USBDevice* device);
 void xhci_thingdong(XHCIControllerSession *session, USBDevice* device, void* trb, int doorbell_index, int doorbell_value);
@@ -710,7 +696,7 @@ void xhci_recieve_bulk(XHCIControllerSession *session, USBDevice* device, uint64
 void xhci_bulk_transfer(XHCIControllerSession *session, USBDevice* device, USBRing *ring, uint64_t data_length, void* data);
 void xhci_send_set_interface(XHCIControllerSession *session, USBDevice* device, int interface_id);
 char* xhci_trb_type_to_string(uint8_t trb_type);
-void xhci_check_event();
+int xhci_check_event();
 XHCIControllerSession* xhci_allocate_new_session();
 uint8_t xhci_is_64(XHCIControllerSession *session);
 cbw* create_scsi_command();
@@ -723,3 +709,10 @@ void msd_read_sector(XHCIControllerSession *session, USBDevice* device,uint32_t 
 void* msd_load_file(XHCIControllerSession *session, USBDevice* device,fat32_file_entry* bestand);
 uint8_t xhci_check_for_new_devs();
 uint8_t xhci_custom_check(XHCIControllerSession *session);
+
+void xhci_debug(char* msg,...);
+#ifdef XHCI_DEBUG
+#define printd printk 
+#else 
+#define printd xhci_debug 
+#endif 

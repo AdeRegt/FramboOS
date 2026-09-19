@@ -1,6 +1,6 @@
 #include "xhci.h"
 
-void event_watcher()
+void event_watcher(int timeout)
 {
     //
     // Hier komt de event watcher code
@@ -9,13 +9,23 @@ void event_watcher()
         //
         // Controleer de Event Ring op nieuwe events
         //
-        sleep(100);
-        xhci_check_event();
+        sleep(50);
+        int ur = xhci_check_event();
 
 #ifndef XHCI_XHCI_TREAD
     if(xhci_keep_running)
     {
-        goto again;
+        if(timeout)
+        {
+            if(!ur)
+            {
+                timeout--;
+            }
+            goto again;
+        }
+        else
+        {
+        }
     }
 #else 
     goto again;

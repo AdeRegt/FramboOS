@@ -24,13 +24,13 @@ void xhci_handle_transfer_event(XHCIControllerSession *session, TransferEventTRB
             case XHCI_TRB_STATUS_TRB_TYPE: // Status Stage TRB
                 if(thisdevice->initialisation_status==1){
                     if(thisdevice->devdesc->bDeviceClass!=0){
-                        printk("XHCI TE: Apparaat op poort %d heeft Device Class %s\n", thisdevice->physical_port_id + 1, xhci_class_to_string(thisdevice->devdesc->bDeviceClass));
+                        printk("XHCI TE: Apparaat op poort %d heeft Device Class %s (v1)\n", thisdevice->physical_port_id + 1, xhci_class_to_string(thisdevice->devdesc->bDeviceClass));
                     }else{
                         // printk("XHCI TE: Apparaat op poort %d heeft een configuratie descriptor nodig\n", thisdevice->physical_port_id + 1);
                         xhci_send_request_configuration_descriptor(session, thisdevice);
                     }
                 }else if(thisdevice->initialisation_status==2){
-                    printk("XHCI TE: Apparaat op poort %d heeft Device Class %s\n", thisdevice->physical_port_id + 1, xhci_class_to_string(thisdevice->configdesc->interfacdesc.bInterfaceClass));
+                    printk("XHCI TE: Apparaat op poort %d heeft Device Class %s (v2)\n", thisdevice->physical_port_id + 1, xhci_class_to_string(thisdevice->configdesc->interfacdesc.bInterfaceClass));
                     xhci_send_set_config(session,thisdevice,thisdevice->configdesc->configdesc.bConfigurationValue);
                 }else if(thisdevice->initialisation_status==3){
                     printk("XHCI TE: Apparaat op poort %d heeft de configuratie ingesteld\n", thisdevice->physical_port_id + 1);

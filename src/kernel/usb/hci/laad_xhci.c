@@ -21,19 +21,19 @@ void laad_xhci(pci_class* xhci_device)
     session->pci_device = xhci_device;
     session->base_xhci_address = (void*)(uintptr_t)(bar_address);
     // printk("XHCI is beschikbaar op IRQ %d met BAR0 %x \n", xhci_device->interrupt, session->base_xhci_address);
-
+    
     #ifdef XHCI_CHECK_INTERNALS
         uint32_t segcnt = ERSTSZ(0); // Aantal segmenten - 1
         uint32_t oldad = ERSTBA_L(0);
         uint32_t cr1 = CRCR_L;
         uint32_t *oppa;
         uint32_t coc = 50;
-        printk("Het XHCI EFI event ring systeem bevat %d segmenten en heeft als address %x [cr1:%x|x]\n",segcnt,oldad,cr1);
+        printd("Het XHCI EFI event ring systeem bevat %d segmenten en heeft als address %x [cr1:%x|x]\n",segcnt,oldad,cr1);
         if(oldad==0xFFFFFFFF){
             oppa = (uint32_t*) (((uint64_t) cr1) & 0xFFFFFFFFFFFFFFE0);
         }else{
             XHCIEventRingSegmentTable* erst = (XHCIEventRingSegmentTable*) (uint64_t) oldad;
-            printk("@ segment size: %d op address %x \n",erst->ring_segment_size,erst->ring_segment_base_address_low);
+            printd("@ segment size: %d op address %x \n",erst->ring_segment_size,erst->ring_segment_base_address_low);
             coc = erst->ring_segment_size;erst->ring_segment_size;
             oppa = (uint32_t*) (uint64_t) erst->ring_segment_base_address_low;
         }
@@ -48,16 +48,16 @@ void laad_xhci(pci_class* xhci_device)
                 uint8_t event_type = (ad >> 10) & 0x3F;
                 if(event_type){
                     if(oldad==0xFFFFFFFF){
-                        printk("|%d",event_type);f++;
+                        printd("|%d",event_type);f++;
                     }else if(event_type==33){
                         uint32_t* eppa = (uint32_t*) (uint64_t) aa;
                         event_type = (eppa[3] >> 10) & 0x3F;
-                        printk("[%x] %d",aa,event_type);f++;
+                        printd("[%x] %d",aa,event_type);f++;
                     }
                 }
             // }
         }
-        printk("@%d ",f);
+        printd("@%d ",f);
         return;
     #endif 
 
@@ -123,31 +123,45 @@ void laad_xhci(pci_class* xhci_device)
     #else 
 	USBCMD = USBCMD | USBCMD_MASK_RS;
     #endif 
-    sleep(100);
-    while(1){
+    
+    for(int pid = 0 ; pid < HCSPARAMS1_MaxPorts ; pid++)
+    {
+        define_linear_memory_block((void*)(uintptr_t)((uintptr_t)session->base_xhci_address + (*(volatile uint8_t*)((uintptr_t)session->base_xhci_address + 0x00)) + 0x400 + (0x10 * (pid))),1);
+    }
+    
+    #ifdef XHCI_XHCI_TREAD
+    if(xhci_session_count==1){
+        task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
+    }
+    #else 
+    int timeout = 0;
+    printk("xhci: wachten totdat apparaten zichzelf kenbaar maken\n");
+    while(timeout<100){
         uint8_t rs = 0;
         #ifndef ENABLE_XHCI_INTERUPTS
         rs = xhci_check_for_new_devs();
-        // printk("Er zijn %d poorten klaar om gelezen te worden met activatie!\n",rs);
+        // printd("Er zijn %d poorten klaar om gelezen te worden met activatie!\n",rs);
         if(rs!=0){
+            printk("xhci: er zijn %d apparaten om gelezen te worden!\n",rs);
             break;
         }
         #endif
         rs = xhci_custom_check(session);
-        // printk("Er zijn %d poorten klaar om gelezen te worden met portpolling!\n",rs);
+        // printd("Er zijn %d poorten klaar om gelezen te worden met portpolling!\n",rs);
         if(rs!=0){
+            printk("xhci: er zijn %d apparaten om gelezen te worden!\n",rs);
             break;
         }
         sleep(100);
+        timeout++;
+        printk(".");
     }
-
-    #ifndef ENABLE_XHCI_INTERUPTS
-    yield();
-    #ifdef XHCI_XHCI_TREAD
-    task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
-    #else 
-    xhci_keep_running = 1;
-    event_watcher();
+    printk("\n");
+    if(timeout<100){
+        yield();
+        xhci_keep_running = 1;
+        event_watcher(1000);
+    }
     #endif 
-    #endif
+    printk("xhci: het opstarten van de hostcontroller lijkt geslaagd\n");
 }

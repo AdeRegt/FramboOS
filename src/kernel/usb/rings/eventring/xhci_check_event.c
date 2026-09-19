@@ -1,16 +1,34 @@
 #include "xhci.h"
 
-void xhci_check_event()
+int xhci_check_event()
 {
+    int ures = 0;
     for(int sessionid = 0 ; sessionid < xhci_session_count; sessionid++){
         XHCIControllerSession *session = &xhci_session[sessionid];
-        volatile uint32_t *event_ring = (volatile uint32_t*)(uint64_t)(uint32_t)(ERDP_L(0) & 0xFFFFFFF0);
+        
+        // Guard against concurrent event ring processing
+        if(session->event_ring_processing) {
+            continue;  // Already processing, skip to prevent race condition
+        }
+
+        if(session->xhci_event_ring==0) {
+            continue;
+        }
+        
+        session->event_ring_processing = 1;  // Mark as processing
+        memory_barrier();  // Ensure visibility to other CPUs/interrupts
+        
+        // Read ERDP with memory barrier
+        memory_barrier();
+        volatile uint32_t *event_ring = (volatile uint32_t*)(ERDP_L(0) & 0xFFFFFFF0);
+        
         // for(int c = 0 ; c < XHCI_EVENT_RING_SIZE ; c++){
             volatile uint32_t wingA = event_ring[0];
             volatile uint32_t wingB = event_ring[1];
             volatile uint32_t wingC = event_ring[2];
             volatile uint32_t wingD = event_ring[3];
             if( (wingD & 0x1) == session->xhci_event_ring_cycle_state ){
+                ures = 1;
                 // Er is een nieuw event
                 uint8_t event_type = (wingD >> 10) & 0x3F;
                 switch(event_type){
@@ -43,15 +61,23 @@ void xhci_check_event()
                     // printk("XHCI: warning: eventring spoiled!\n");
                     session->xhci_event_ring_cycle_state ^= 1;
                     // memset((void*)event_ring,0,(sizeof(uint32_t)*4)*XHCI_EVENT_RING_SIZE);
-                    ERDP_L(0) = (uint64_t)(uintptr_t)session->xhci_event_ring | 1 | (1 << 3);
+                    memory_barrier();  // Ensure reads are complete before ERDP write
+                    ERDP_L(0) = (uint64_t)(uintptr_t)session->xhci_event_ring | 1;
                     ERDP_H(0) = 0;
+                    memory_barrier();  // Ensure ERDP write completes
                 }else{
-                    ERDP_L(0) = (uint64_t)((uintptr_t)&event_ring[4]) | 1 | (1 << 3);
+                    memory_barrier();  // Ensure reads are complete before ERDP write
+                    ERDP_L(0) = (uint64_t)((uintptr_t)&event_ring[4]) | 1;
                     ERDP_H(0) = 0;
+                    memory_barrier();  // Ensure ERDP write completes
                 }
                 // printk("HALTED HERE");
                 // for(;;);
             }
         // }
+        
+        memory_barrier();  // Ensure event processing is complete
+        session->event_ring_processing = 0;  // Mark as done
     }
+    return ures;
 }

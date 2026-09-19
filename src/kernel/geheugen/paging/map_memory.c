@@ -47,4 +47,5 @@ void map_memory(void* pml4mem, void *virtualmemory, void* physicalmemory, uint8_
     pd_entry->largepages        = 1; // Vertel de CPU dat dit een 2MB pagina is
     pd_entry->usersuper         = is_user;
     pd_entry->cachedisabled     = is_cache; // Bit 4 voorkomt dat de CPU registers cachet
+    pd_entry->writetrough       = is_cache;
 }

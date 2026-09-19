@@ -28,7 +28,7 @@ void* msd_load_file(XHCIControllerSession *session, USBDevice* device,fat32_file
 
         #ifndef XHCI_XHCI_TREAD
         xhci_keep_running = 1;
-        event_watcher();
+        event_watcher(1000);
         #endif
 
         memcpy((void*)(uint64_t)(((uint64_t)primairybuffer)+(i*transfersize)),msd->filebuffer,transfersize);

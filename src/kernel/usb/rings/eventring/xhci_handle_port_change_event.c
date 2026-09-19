@@ -46,19 +46,19 @@ void xhci_handle_port_change_event(XHCIControllerSession *session, PortStatusCha
 
     switch(completion_code) {
         case 1: // Success
-            printk("XHCI HPCE: Poort %d succesvol gewijzigd.", port_id);
+            printd("XHCI HPCE: Poort %d succesvol gewijzigd.", port_id);
             break;
         case 2: // Port Disabled
-            printk("XHCI HPCE: Poort %d is uitgeschakeld.", port_id);
+            printd("XHCI HPCE: Poort %d is uitgeschakeld.", port_id);
             break;
         case 3: // Connect Status Changed
-            printk("XHCI HPCE: Verbindingsstatus van poort %d is gewijzigd.", port_id);
+            printd("XHCI HPCE: Verbindingsstatus van poort %d is gewijzigd.", port_id);
             break;
         default:
-            printk("XHCI HPCE: Onbekende completion code %s voor poort %d.", xhci_get_resultcode_string(completion_code), port_id);
+            printd("XHCI HPCE: Onbekende completion code %s voor poort %d.", xhci_get_resultcode_string(completion_code), port_id);
             break;
     }
-    printk("\n");
+    printd("\n");
 
     session->devices[session->max_ports].physical_port_id = calculatedportid;
 

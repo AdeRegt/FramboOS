@@ -31,6 +31,8 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 
     void *localring = kalloc();
 	void *infostructures = kalloc();
+	define_linear_memory_block((void*)(uintptr_t)(localring),1);
+	define_linear_memory_block((void*)(uintptr_t)(infostructures),1);
 	XHCIInputControlContext *icc = (XHCIInputControlContext*) infostructures;
 	icc->Aregisters = 0b11;
 
@@ -49,6 +51,7 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	epc->MaxESITPayloadLow = 2;
 	
 	session->device_context_base_address_array[device->slot_id] = ((uint64_t)kalloc());
+	define_linear_memory_block((void*)(uintptr_t)(session->device_context_base_address_array[device->slot_id]),1);
 	
 	trb->DataBufferPointerLo = (uint32_t)(uint64_t)(infostructures);
 	trb->DataBufferPointerHi = (uint32_t)0;
@@ -64,14 +67,6 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 	control_ring->cycle_state = XHCI_CRCS_DEFAULT_CYCLE_STATE;
 	device->commandring = control_ring;
 
-    // uint32_t* vxc = (uint32_t*) (uint64_t)trb->DataBufferPointerLo;
-    // for(int i = 0 ; i < 100 ; i++){
-    //     if(vxc[i]){
-    //         printk("[%x:%x] ",i,vxc[i]);
-    //     }
-    // }
-    // for(;;);
-	
     xhci_thingdong(session, device, (void*)trb, 0, 0);
 
 }

@@ -19,6 +19,10 @@ void xhci_activate_endpoints(XHCIControllerSession *session, USBDevice* device)
     void* ring1 = kalloc();
     void* ring2 = kalloc();
 
+    define_linear_memory_block((void*)(uintptr_t)(mostar),1);
+    define_linear_memory_block((void*)(uintptr_t)(ring1),1);
+    define_linear_memory_block((void*)(uintptr_t)(ring2),1);
+
     uint8_t ep_addr1 = ( device->configdesc->endpoint1.bEndpointAddress & 0xF ) * 2;
 	ep_addr1 += (device->configdesc->endpoint1.bEndpointAddress & USB_DIR_IN) ? 1 : 0;
 

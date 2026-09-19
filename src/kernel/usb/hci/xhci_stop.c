@@ -9,8 +9,8 @@ void xhci_stop(XHCIControllerSession *session)
 		sleep(10);
 		// now wait until we have come to a full stop
 		while(USBSTS_HCH==0);
-        printk("xhci_stop: controller stopped.\n");
+        printd("xhci_stop: controller stopped.\n");
 	}else{
-        printk("xhci_stop: controller already stopped.\n");
+        printd("xhci_stop: controller already stopped.\n");
     }
 }
