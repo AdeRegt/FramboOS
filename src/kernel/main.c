@@ -28,7 +28,7 @@ void kernel_main(BootInfo *bootinfo)
 
     //
     // Klaar!
-    // printk("Kernel initialisatie compleet!\n");
+    printk("Kernel initialisatie compleet!\n");for(;;);
 
     //
     // Wachten op beschikbaarheid van FS

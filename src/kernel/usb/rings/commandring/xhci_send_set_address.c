@@ -12,22 +12,31 @@ void xhci_send_set_address(XHCIControllerSession *session, USBDevice* device)
 
     uint8_t portspeed = PORTSC_Port_Speed (device->physical_port_id);
     uint16_t calculatedportspeed = 0;
+	char* namedportspeed;
 	if(portspeed==XHCI_SPEED_SUPER)
 	{
 		calculatedportspeed = 512;
+		namedportspeed = "super";
 	}
 	else if(portspeed==XHCI_SPEED_HI)
 	{
 		calculatedportspeed = 64;
+		namedportspeed = "high";
+		return;
 	}
 	else if(portspeed==XHCI_SPEED_LOW)
 	{
 		calculatedportspeed = 8;
+		namedportspeed = "low";
+		return;
 	}
 	else if(portspeed==XHCI_SPEED_FULL)
 	{
 		calculatedportspeed = 64;
+		namedportspeed = "full";
+		return;
 	}
+	printk("XHCI setup ring for port %d met portspeed %d en snelheid %s \n",device->physical_port_id,calculatedportspeed,namedportspeed);
 
     void *localring = kalloc();
 	void *infostructures = kalloc();
