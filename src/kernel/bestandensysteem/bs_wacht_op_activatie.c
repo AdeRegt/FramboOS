@@ -3,12 +3,12 @@
 
 void wachten_op_bestandssysteem()
 {
-    while(1)
+    fshook = 0;
+    agg:
+    if(fshook!=0)
     {
-        if(fshook!=0)
-        {
-            return;
-        }
-        sleep(100);
+        return;
     }
+    sleep(100);
+    goto agg;
 }

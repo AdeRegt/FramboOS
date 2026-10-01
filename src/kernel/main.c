@@ -32,7 +32,7 @@ void kernel_main(BootInfo *bootinfo)
 
     //
     // Wachten op beschikbaarheid van FS
-    wachten_op_bestandssysteem();
+    wachten_op_bestandssysteem();printk("Viectory!\n");for(;;);
     beeldscherm_leeg();
     printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
     char *eargs[] = {0};

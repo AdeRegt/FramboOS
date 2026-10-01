@@ -65,7 +65,7 @@ void laad_xhci(pci_class* xhci_device)
     //
     // Dit is de xhci interrupt handler installatie
     //
-    install_device_interrupt(xhci_device, xhci_interrupt_handler);
+    install_device_interrupt(xhci_device, (void (*)(void)) xhci_interrupt_handler);
     #endif 
 
     #ifdef DISABLE_32_BIT_XHCI
@@ -131,7 +131,7 @@ void laad_xhci(pci_class* xhci_device)
     
     #ifdef XHCI_XHCI_TREAD
     if(xhci_session_count==1){
-        task_create(XHCI_EVENT_HANDLER_TREAT_NAME, event_watcher);
+        task_create(XHCI_EVENT_HANDLER_TREAT_NAME, (void (*)(void)) event_watcher);
     }
     #else 
     int timeout = 0;
