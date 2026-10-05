@@ -5,14 +5,20 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
     MassStorageDevice* msd = (MassStorageDevice*) device->attachment;
     if(msd->loop_id==1){
         void* data = kalloc();
+        define_linear_memory_block(data,1);
         xhci_recieve_bulk(session,device,msd->datalength,data);
         msd->loop_id=2;
+            printk("DDD");
         return;
     }
     if(msd->loop_id==3){
         uint8_t* inc = (uint8_t*) (uint64_t)transfer_event->DataBufferPointerLo;
         csw* c = (csw*) inc;
-        printk("scsi response: status: %d residue: %d \n",c->bCSWStatus,c->dCSWDataResidue);
+        define_linear_memory_block(c,1);
+        printk("scsi response: status: %d residue: %d signature: %x tag: %d \n",c->bCSWStatus,c->dCSWDataResidue,c->dCSWSignature,c->dCSWTag);
+        if(c->dCSWSignature!=SCSI_CSW_SIGNATURE){
+            printk("scsi response: invalid signature\n");
+        }
     }
     if(msd->target==0){
         if(msd->loop_id==0){
@@ -59,6 +65,8 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
             dev->device = device;
             dev->session = session;
             bs_regristreer(dev);
+            filesystem_is_ready = 1;
+            printk("filesystem is registered\n");
 
             #ifndef XHCI_XHCI_TREAD
             xhci_keep_running = 0;
@@ -70,9 +78,11 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
         if(msd->loop_id==2){
             uint8_t* inc = (uint8_t*) (uint64_t)transfer_event->DataBufferPointerLo;
             msd->filebuffer = inc;
+            printk("AAA");
         }else if(msd->loop_id==3){
             msd->file_load_is_ready = 1;
             // printk("done loading file\n");
+            printk("BBB");
 
             #ifndef XHCI_XHCI_TREAD
             xhci_keep_running = 0;
@@ -82,6 +92,8 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
     if(msd->loop_id==2){
         msd->loop_id=3;
         void* data = kalloc();
+        define_linear_memory_block(data,0);
+            printk("CCC");
         xhci_recieve_bulk(session,device,13,data);
     }
 }

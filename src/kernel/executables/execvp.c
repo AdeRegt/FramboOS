@@ -17,6 +17,14 @@ int execvp (const char *file, char *const argv[]){
         printk("ERROR: bestand() returned NULL\n");
         return 1;
     }
+    define_linear_memory_block(g,0);
+
+    // printk("execvp: xx ");
+    // for(int i = 0; i < 16; i++){
+    //     printk("%x ",((char*)g+i)[0]);
+    // }
+    // printk("\n\n");
+    // for(;;);
     printk("File loaded at: %x\n", g);
 
     Elf64_Ehdr *elfheader = (Elf64_Ehdr*) g;

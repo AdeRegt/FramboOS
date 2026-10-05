@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 extern void* fshook;
+extern int filesystem_is_ready;
 
 void wachten_op_bestandssysteem();
 void bs_regristreer(void* fsdata);

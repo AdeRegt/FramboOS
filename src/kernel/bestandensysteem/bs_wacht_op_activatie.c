@@ -1,14 +1,14 @@
 #include "bestandensysteem.h"
 #include "geheugen.h"
 
+int filesystem_is_ready = 0;
 void wachten_op_bestandssysteem()
 {
-    fshook = 0;
+    filesystem_is_ready = 0;
     agg:
-    if(fshook!=0)
+    if(filesystem_is_ready==1)
     {
         return;
     }
-    sleep(100);
     goto agg;
 }

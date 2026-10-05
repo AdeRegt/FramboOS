@@ -102,7 +102,7 @@ void laad_geheugen(BootInfo *meme)
     define_page_memory_range_from_memory_descriptor(paging_geheugen_blok);
     define_page_memory_range_from_memory_descriptor(kernel_geheugen_blok);
     map_memory(master_page_table, (void*)meme->graphics_info->BaseAddress, (void*)meme->graphics_info->BaseAddress,0,0);
-    for(int i = 0 ; i < 5 ; i++){
+    for(int i = 0 ; i < 15 ; i++){
         map_memory(master_page_table, (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)), (void*)((uint64_t)meme->graphics_info->BaseAddress + (i*PAGE_GAP_SIZE)),0,0);
     }
     asm volatile ("mov %0, %%cr3" : : "r" (master_page_table));

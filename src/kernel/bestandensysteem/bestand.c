@@ -2,7 +2,6 @@
 #include "xhci.h"
 
 void* bestand(uint8_t* path){
-    uint8_t* pth = (uint8_t*) kalloc();
     MSDDevice* f = (MSDDevice*) fshook;
     MassStorageDevice* msd = (MassStorageDevice*) f->device->attachment;
 

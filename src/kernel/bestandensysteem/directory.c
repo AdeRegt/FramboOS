@@ -26,6 +26,7 @@ uint8_t* directory(){
                     pth[pointer++] = file.Name[(11-3)+z];
                 }
             }
+            pth[pointer] = 0x00;
             ppp++;
         }
     }

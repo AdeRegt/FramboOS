@@ -28,11 +28,11 @@ void kernel_main(BootInfo *bootinfo)
 
     //
     // Klaar!
-    printk("Kernel initialisatie compleet!\n");for(;;);
+    printk("Kernel initialisatie compleet!\n");
 
     //
     // Wachten op beschikbaarheid van FS
-    wachten_op_bestandssysteem();printk("Viectory!\n");for(;;);
+    wachten_op_bestandssysteem();
     beeldscherm_leeg();
     printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
     char *eargs[] = {0};
