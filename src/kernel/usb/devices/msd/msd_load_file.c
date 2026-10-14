@@ -24,7 +24,7 @@ void* msd_load_file(XHCIControllerSession *session, USBDevice* device,fat32_file
     uint32_t transfersize = sectortransfersize*SCSI_SECTOR_SIZE;
     for(uint32_t i = 0 ; i < bestand->FileSize ; i += transfersize)
     {
-        uint32_t lba = sector + z + msd->mbr->part1.lba;
+        uint32_t lba = sector + z ;//+ msd->mbr->part1.lba;
         printk("Loading %d bytes at offset %d out of %d \n",transfersize,lba,bestand->FileSize/SCSI_SECTOR_SIZE);
         
         msd_read_sector(session,device,lba,transfersize/SCSI_SECTOR_SIZE);

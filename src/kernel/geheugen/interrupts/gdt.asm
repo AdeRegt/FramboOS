@@ -23,7 +23,6 @@ lgdt [rdi]
     ret
 
 
-%include "geheugen/task/taskswitchstub.asm"
 %include "geheugen/syscall/syscallstart.asm"
 
 global jump_usermode

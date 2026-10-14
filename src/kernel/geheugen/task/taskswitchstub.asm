@@ -1,8 +1,5 @@
 ;
-; Dit is de stub voor de taskswitch 
-; Inspired by Fred Noras OS: 
-; - https://github.com/frednora/gramado/blob/main/kernel/gthouse/arch/x86_64/ints/per/hw1.asm
-; - https://github.com/frednora/gramado/blob/main/kernel/gthouse/arch/x86_64/ints/per/hw2.asm
+; taskswitchstub.asm - Robuuste per-task context switching met FPU/SSE support
 ;
 
 section .text
@@ -11,208 +8,150 @@ align 16
 global taskswitchstub
 extern acknowledge_interrupt
 extern scheduler_tick
-
-extern _contextRIP
-extern _contextCS
-extern _contextRFLAGS
-extern _contextRSP
-extern _contextSS
-extern _contextRDX
-extern _contextRCX
-extern _contextRBX
-extern _contextRAX
-extern _contextRBP
-extern _contextRDI
-extern _contextRSI
-extern _contextR8
-extern _contextR9
-extern _contextR10
-extern _contextR11
-extern _contextR12
-extern _contextR13
-extern _contextR14
-extern _contextR15
-extern _contextGS
-extern _contextFS
-extern _contextES
-extern _contextDS
-extern _contextCPL
+extern get_current_task_context
 
 taskswitchstub:
-    cli
+    ; cli
 
-    ; Stack frame. (all double)
-    pop qword [_contextRIP]     ; rip
-    pop qword [_contextCS]      ; cs  (R3)
-    pop qword [_contextRFLAGS]  ; rflags
-
+    ; Sla alle algemene registers op op de stack
     push rax
-    mov rax, qword [_contextCS]  ; Get CPL
-    and rax, 3                   ; Select 2 bits
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push rbp
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
 
-    cmp rax, 3
-    je .R3Thread 
-    cmp rax, 0
-    je .R0Thread
-    pop rax
-    hlt
+    ; Verkrijg de pointer naar de context van de huidige taak
+    call get_current_task_context  ; retourneert pointer in rax
 
-; Stackframe for ring 0 has only 3 elements.
-.R0Thread:
-    pop rax
-    mov qword [_contextRSP], 0
-    mov qword [_contextSS], 0
-    jmp .AfterStackFrame
+    ; Sla GP registers op in cpu_context_t
+    mov qword [rax + 0],   r15
+    mov qword [rax + 8],   r14
+    mov qword [rax + 16],  r13
+    mov qword [rax + 24],  r12
+    mov qword [rax + 32],  r11
+    mov qword [rax + 40],  r10
+    mov qword [rax + 48],  r9
+    mov qword [rax + 56],  r8
+    mov qword [rax + 64],  rdi
+    mov qword [rax + 72],  rsi
+    mov qword [rax + 80],  rbp
 
-; Stack frame for ring 3 has 5 elements.
-.R3Thread:
-    pop rax
-    pop qword [_contextRSP]     ; rsp
-    pop qword [_contextSS]      ; ss
-    jmp .AfterStackFrame
+    mov rbx, [rsp + 104]   ; rbx
+    mov qword [rax + 88],  rbx
+    mov rbx, [rsp + 88]    ; rdx
+    mov qword [rax + 96],  rbx
+    mov rbx, [rsp + 96]    ; rcx
+    mov qword [rax + 104], rbx
+    mov rbx, [rsp + 112]   ; rax
+    mov qword [rax + 112], rbx
 
-.AfterStackFrame:
-    mov qword [_contextRDX], rdx 
-    mov qword [_contextRCX], rcx 
-    mov qword [_contextRBX], rbx 
-    mov qword [_contextRAX], rax
-     
-    mov qword [_contextRBP], rbp
- 
-    mov qword [_contextRDI], rdi 
-    mov qword [_contextRSI], rsi 
+    ; Interrupt stack frame inspectie (gepusht door CPU):
+    ; [rsp + 120] = RIP
+    ; [rsp + 128] = CS
+    ; [rsp + 136] = RFLAGS
+    ; [rsp + 144] = RSP (indien CPL == 3)
+    ; [rsp + 152] = SS  (indien CPL == 3)
 
-    mov qword [_contextR8], r8
-    mov qword [_contextR9], r9
-    mov qword [_contextR10], r10
-    mov qword [_contextR11], r11
-    mov qword [_contextR12], r12
-    mov qword [_contextR13], r13
-    mov qword [_contextR14], r14
-    mov qword [_contextR15], r15
+    mov rbx, [rsp + 120]
+    mov qword [rax + 120], rbx ; rip
+    mov rbx, [rsp + 128]
+    mov qword [rax + 128], rbx ; cs
+    mov rbx, [rsp + 136]
+    mov qword [rax + 136], rbx ; rflags
 
-; Data segments
-    xor rax, rax
-; FS/GS bases come from MSRs (IA32_FS_BASE, IA32_GS_BASE), 
-; not the selector’s descriptor base. 
-; Moving a selector into fs/gs does not set their base; 
-; you need wrmsr if you use per-CPU or TLS bases. 
-; Saving/restoring just the selectors may not preserve 
-; what you expect.
-    mov ax, gs
-    mov word [_contextGS], ax
-    mov ax, fs
-    mov word [_contextFS], ax
-; DS and ES are largely ignored for data addressing in long mode; 
-; loading them is typically redundant.
-    mov ax, es
-    mov word [_contextES], ax
-    mov ax, ds
-    mov word [_contextDS], ax
+    mov rdx, [rsp + 128]
+    and rdx, 3
+    mov qword [rax + 168], rdx ; cpl
 
-; cpl
-; Get the first 2 bits of cs.
-; see: x64cont.c
-    mov rax, qword [_contextCS]  ;(R3)
-    and rax, 3
-    mov [_contextCPL], rax
-   
-    ;mov rdi, rsp
+    cmp rdx, 3
+    je .save_r3
+    
+    ; Ring 0 frame
+    mov qword [rax + 136], 0
+    mov qword [rax + 144], 0
+    jmp .save_segs
+
+.save_r3:
+    mov rbx, [rsp + 144]
+    mov qword [rax + 136], rbx ; rsp
+    mov rbx, [rsp + 152]
+    mov qword [rax + 144], rbx ; ss
+
+.save_segs:
+    ; Sla FPU / SSE state op (fxsave vereist 16-byte alignment)
+    lea rdi, [rax + 176]
+    fxsave [rdi]
+
+    ; Roep scheduler aan om volgende taak te selecteren en interrupt te acknowledgen
     call scheduler_tick
 
-; 64bit
-; This is a 64bit pointer to the pml4 table.
+    ; Verkrijg de context pointer van de NIEUWE taak
+    call get_current_task_context  ; retourneert nieuwe pointer in rax
 
-; #bugbug
-; CR3 refresh: 
-; We flush TLB each tick; only do it when switching address spaces. 
-; Otherwise it’s needless overhead.
+    ; Herstel FPU / SSE state van de nieuwe taak
+    lea rsi, [rax + 176]
+    fxrstor [rsi]
 
-;    mov RAX, CR3  
-;    IODELAY 
-;    mov CR3, RAX  
+    ; Herstel GP registers van de nieuwe taak
+    mov r15, qword [rax + 0]
+    mov r14, qword [rax + 8]
+    mov r13, qword [rax + 16]
+    mov r12, qword [rax + 24]
+    mov r11, qword [rax + 32]
+    mov r10, qword [rax + 40]
+    mov r9,  qword [rax + 48]
+    mov r8,  qword [rax + 56]
+    mov rdi, qword [rax + 64]
+    mov rsi, qword [rax + 72]
+    mov rbp, qword [rax + 80]
+    mov rbx, qword [rax + 88]
+    mov rdx, qword [rax + 96]
+    mov rcx, qword [rax + 104]
 
-; Wait TLB.
-    ;IODELAY 
-;
-; == Restore context ====================
-;
+    ; Schoon onze 15 gepushte GP registers op van de stack (120 bytes)
+    add rsp, 120
 
-    ; Segments
-    xor rax, rax
-; DS and ES are largely ignored for data addressing in long mode; 
-; loading them is typically redundant.
-    mov ax, word [_contextDS]
-    mov ds, ax
-    mov ax, word [_contextES]
-    mov es, ax
-; FS/GS bases come from MSRs (IA32_FS_BASE, IA32_GS_BASE), 
-; not the selector’s descriptor base. 
-; Moving a selector into fs/gs does not set their base; 
-; you need wrmsr if you use per-CPU or TLS bases. 
-; Saving/restoring just the selectors may not preserve 
-; what you expect.
-    mov ax, word [_contextFS]
-    mov fs, ax
-    mov ax, word [_contextGS]
-    mov gs, ax
+    ; Verwijder het oude interrupt frame van de CPU
+    pop r10
+    pop r10
+    pop r10
 
-    mov r15, qword [_contextR15]
-    mov r14, qword [_contextR14]
-    mov r13, qword [_contextR13]
-    mov r12, qword [_contextR12]
-    mov r11, qword [_contextR11]
-    mov r10, qword [_contextR10]
-    mov r9,  qword [_contextR9]
-    mov r8,  qword [_contextR8]
+    ; Bepaal of we naar Ring 3 of Ring 0 gaan
+    mov r11, qword [rax + 168]
+    and r11, 3
+    cmp r11, 3
+    je .restore_user_frame
 
-    mov rsi, qword [_contextRSI] 
-    mov rdi, qword [_contextRDI] 
-    
-    mov rbp, qword [_contextRBP] 
-    
-    mov rax, qword [_contextRAX] 
-    mov rbx, qword [_contextRBX] 
-    mov rcx, qword [_contextRCX] 
-    mov rdx, qword [_contextRDX] 
+    ; Ring 0 target task: bouw interrupt frame en voer iretq uit
+    push qword [rax + 136] ; rflags
+    push qword [rax + 128] ; cs
+    push qword [rax + 120] ; rip
+    mov rax, qword [rax + 112]
+    sti
+    iretq
 
-; --------------------------------------------
-; Stack frame saga
+.restore_user_frame:
+    mov rcx, qword [rax + 136] ; target RSP voor user mode
+    test rcx, rcx
+    jz .use_default_rsp
+    mov rsp, rcx
 
-    ;----------------------------------------
-    ; Now rebuild the hardware-saved stack frame.
-    ; The appropriate frame is chosen based on _contextCPL.
-    ;----------------------------------------
-
-    mov rax, qword [_contextCS]   ; Get CPL
-    and rax, 3                    ; Select 2 bits
-
-    ; Compare
-    cmp rax, 3
-    je .restore_user_mode
-    cmp rax, 0
-    je .restore_kernel_mode
-    ; jmp .InvalidThread
-
-; Stack frame. (all double)
-; Stackframe for ring 0 has only 3 elements.
-.restore_kernel_mode:
-    push qword [_contextRFLAGS]  ; rflags
-    push qword [_contextCS]      ; cs
-    push qword [_contextRIP]     ; rip
-    jmp .stackframe_done
-
-; Stack frame. (all double)
-; Stack frame for ring 3 has 5 elements.
-.restore_user_mode:
-    push qword [_contextSS]      ; ss
-    push qword [_contextRSP]     ; rsp
-    push qword [_contextRFLAGS]  ; rflags
-    push qword [_contextCS]      ; cs
-    push qword [_contextRIP]     ; rip
-
-.stackframe_done:
-    mov rax, qword [_contextRAX]
-
-
+.use_default_rsp:
+    push qword [rax + 144]     ; ss
+    push qword [rax + 136]     ; rsp
+    push qword [rax + 136]     ; rflags
+    push qword [rax + 128]     ; cs
+    push qword [rax + 120]     ; rip
+    mov rax, qword [rax + 112]
+    sti
     iretq

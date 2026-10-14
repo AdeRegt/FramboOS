@@ -8,7 +8,6 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
         define_linear_memory_block(data,1);
         xhci_recieve_bulk(session,device,msd->datalength,data);
         msd->loop_id=2;
-            printk("DDD");
         return;
     }
     if(msd->loop_id==3){
@@ -68,6 +67,9 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
             filesystem_is_ready = 1;
             printk("filesystem is registered\n");
 
+            extern void kernel_loop();
+            task_create("tasklist", (void (*)(void)) kernel_loop);
+            
             #ifndef XHCI_XHCI_TREAD
             xhci_keep_running = 0;
             #endif 
@@ -78,11 +80,9 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
         if(msd->loop_id==2){
             uint8_t* inc = (uint8_t*) (uint64_t)transfer_event->DataBufferPointerLo;
             msd->filebuffer = inc;
-            printk("AAA");
         }else if(msd->loop_id==3){
             msd->file_load_is_ready = 1;
             // printk("done loading file\n");
-            printk("BBB");
 
             #ifndef XHCI_XHCI_TREAD
             xhci_keep_running = 0;
@@ -93,7 +93,6 @@ void msd_router(XHCIControllerSession *session, USBDevice* device, TransferTRB* 
         msd->loop_id=3;
         void* data = kalloc();
         define_linear_memory_block(data,0);
-            printk("CCC");
         xhci_recieve_bulk(session,device,13,data);
     }
 }

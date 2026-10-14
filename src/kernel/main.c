@@ -3,6 +3,16 @@
 #include "pci.h"
 #include "bestandensysteem.h"
 
+void kernel_loop(){
+    printk("kernel loop aan!\n");
+    wachten_op_bestandssysteem();
+    beeldscherm_leeg();
+    printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
+    char *eargs[] = {0};
+    execvp("SHELL.BIN",eargs);
+    while(1);
+}
+
 void kernel_main(BootInfo *bootinfo)
 {
 
@@ -32,11 +42,6 @@ void kernel_main(BootInfo *bootinfo)
 
     //
     // Wachten op beschikbaarheid van FS
-    wachten_op_bestandssysteem();
-    beeldscherm_leeg();
-    printk("Het bestandssysteem is gesignaleerd!\nBestanden: %s \n",directory());
-    char *eargs[] = {0};
-    execvp("SHELL.BIN",eargs);
 
     while (1)
     {

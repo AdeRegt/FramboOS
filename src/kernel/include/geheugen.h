@@ -119,6 +119,7 @@ typedef struct cpu_context {
     uint64_t rip, cs, rflags, rsp, ss;
     uint64_t cr3;
     uint64_t gs, fs, es, ds, cpl;
+    uint8_t fxsave_area[512] __attribute__((aligned(16)));
 } cpu_context_t;
 
 typedef struct {
